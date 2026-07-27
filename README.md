@@ -1,108 +1,127 @@
-# vinext-starter
+# INHERE Hội An Photography Studio
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Complete editable source code for the INHERE Hội An photography studio website and its admin CMS.
 
-## Prerequisites
+## Technology
 
-- Node.js `>=22.13.0`
-- Linux with `flock`, `curl`, and GNU `timeout`
+- React 19 and TypeScript
+- Vinext / Vite
+- CSS and Tailwind CSS
+- Supabase Authentication, PostgreSQL, Storage, and Realtime
+- Node.js 22+
 
-## Sites Lifecycle
+## Features
 
-The Sites lifecycle CLI runs the locked dependency install before returning this checkout. Edit the source under `app/`, then checkpoint when a coherent milestone is ready to inspect or share. The remote Sites builder runs `npm run build` against the pushed commit. Do not repeat install or build as a normal pre-checkpoint step.
+- Responsive bilingual studio website
+- Portfolio, albums, services, blog, testimonials, and contact sections
+- Instagram Reels section managed through Reel links
+- Secure admin login
+- Admin content management
+- Supabase database migrations and Row Level Security policies
+- English and Vietnamese content support
 
-This starter does not use `wrangler.jsonc`.
+## Requirements
 
-`install:ci` is intentionally a single, non-retrying `npm ci`. It refuses a concurrent install for the same project, consumes a matching image-seeded npm cache with `--prefer-offline` while retaining registry fallback for a missing cache object, otherwise downloads and verifies the complete vinext tarball recorded in `package-lock.json`, limits npm to one socket, and terminates a stalled install. `build` applies a short timeout and then validates the Sites artifact. These helpers target Linux and use GNU `timeout`; they are not native macOS scripts.
+- Node.js 22.13.0 or newer
+- npm
+- A Supabase project
 
-Scripts that need writable project-scoped home, npm, XDG, and temporary paths use `scripts/sites-env.sh`. The `dev` and `start` scripts honor the caller's runtime environment and keep Wrangler logs inside the checkout. The generated `.sites-runtime/` directory is disposable and ignored by Git.
+## Local Setup
 
-## Included Shape
+1. Clone the repository:
 
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+   ```bash
+   git clone https://github.com/devali3697/INHERE-web.git
+   cd INHERE-web
+   ```
 
-## Workspace Auth Headers
+2. Install dependencies:
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+   ```bash
+   npm install
+   ```
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+3. Create the local environment file:
 
-Treat the full name as optional and fall back to email when it is absent:
+   ```bash
+   cp .env.example .env.local
+   ```
 
-```tsx
-import { headers } from "next/headers";
+   On Windows, copy `.env.example` manually and rename the copy to `.env.local`.
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+4. Add your Supabase values to `.env.local`:
 
-  const displayName = fullName ?? email;
-  // ...
-}
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+   ```
+
+5. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+6. Open the local URL shown in the terminal. The admin panel is available at `/admin`.
+
+## Supabase Setup
+
+1. Create or open the Supabase project that will own the website data.
+2. Open **SQL Editor** in the Supabase dashboard.
+3. Run the SQL migrations from the repository's `supabase/` directory.
+4. In **Authentication → URL Configuration**, set the production Site URL and add the production callback/redirect URLs.
+5. Create the admin authentication user.
+6. Configure the database admin identity and Row Level Security policies using the included migrations.
+7. Add the Supabase project URL and publishable key to the hosting environment variables.
+
+Run migrations in their intended sequence. Review each SQL file before applying it to an existing database.
+
+## Build and Validation
+
+Create a production build:
+
+```bash
+npm run build
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+Run the project checks:
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+```bash
+npm test
+```
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+Start the built application:
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+```bash
+npm run start
+```
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+## Deployment
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+The application requires a Node.js-compatible deployment environment and these environment variables:
 
-## Diagnostic Commands
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
-- `npm run install:ci`: perform the one bounded lockfile install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build and validate the deployable Sites artifact
-- `npm run start`: start the built Vinext application
-- `npm test`: build, validate, and verify the rendered development-preview metadata
-- `npm run validate:artifact`: recheck an existing artifact's manifest and ESM `default.fetch` export
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+For Hostinger, choose a plan that supports Node.js applications or deploy through a compatible VPS. Configure the Node.js version, environment variables, install command, build command, and start command in the hosting panel.
 
-Use build and validation commands for targeted diagnosis after a remote failure, not as part of the normal checkpoint path.
+Typical commands:
 
-The timeout defaults can be overridden for a controlled canary with `SITES_INSTALL_TIMEOUT`, `SITES_INSTALL_KILL_AFTER`, `SITES_BUILD_TIMEOUT`, and `SITES_BUILD_KILL_AFTER`. A timeout fails the command; the helpers never retry an unchanged install or build.
+```text
+Install: npm ci
+Build: npm run build
+Start: npm run start
+```
 
-## Learn More
+After deployment, update Supabase Authentication URL Configuration with the live domain.
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+## Security
+
+- The publishable Supabase key is intended for browser clients and must be protected by correct Row Level Security policies.
+- Never commit a Supabase service-role key, database password, access token, or user password.
+- Keep production secrets in the hosting provider's environment-variable settings.
+- Review Row Level Security policies before connecting a new Supabase project.
+
+## Project Ownership
+
+The repository contains the editable application source, assets, package lockfile, build configuration, and Supabase SQL migrations. Live Supabase database rows, Authentication users, and uploaded Storage objects belong to the connected Supabase project and must be exported separately when transferring live data.
