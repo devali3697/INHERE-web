@@ -2066,17 +2066,22 @@ footer {
 .footer-avatar {
   width: 172px;
   aspect-ratio: 1;
-  border-radius: 3px;
+  border-radius: 50%;
   overflow: hidden;
   background: #fff;
   margin-bottom: 30px;
-  border: 6px solid rgba(255, 255, 255, 0.96);
+  padding: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.78);
   box-shadow: 0 22px 55px rgba(0, 0, 0, 0.28);
 }
 .footer-avatar img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  display: block;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(17, 16, 15, 0.26);
 }
 .footer-logo > p {
   margin: 0 0 28px;
