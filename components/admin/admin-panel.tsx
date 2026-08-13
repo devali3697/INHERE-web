@@ -33,6 +33,49 @@ type Section = {
 };
 type Row = Record<string, unknown> & { id?: string };
 
+const seoDraftTemplates: Row[] = [
+  {
+    slug: "perfect-one-day-hoi-an-itinerary",
+    title_en: "The Perfect 1-Day Hội An Itinerary: Where to Go, What to Eat, and Best Photo Spots",
+    category_en: "Hội An Travel Guides",
+    excerpt_en: "A practical morning-to-evening Hội An itinerary with local food stops and the best places to photograph along the way.",
+    content_en: "# Morning: Ancient Town at its quietest\n[Add itinerary text and a high-resolution morning image here.]\n\n## INHERE Full Combo: Áo Dài & Photoshoot\n[INHERE PROMO BLOCK — Full Combo Áo Dài, makeup and professional photoshoot.]\n\n# Midday: Local flavours and a slower pace\n[Add restaurant, market and café recommendations here.]\n\n# Afternoon: Riverside light and photo spots\n[Add afternoon timeline, map notes and photography tips here.]\n\n# Evening: Lanterns, dinner and the night market\n[Add evening itinerary and final practical tips here.]",
+    status: "draft", cover_image: "", title_vi: "", excerpt_vi: "", content_vi: "", category_vi: "", published_at: null, __template: true,
+  },
+  {
+    slug: "where-to-rent-ao-dai-in-hoi-an",
+    title_en: "Where to Rent Áo Dài in Hội An? Pricing & Tips for the Best Traditional Outfits",
+    category_en: "What to Wear",
+    excerpt_en: "A clear Áo Dài rental guide covering prices, fit, accessories and what to check before choosing a traditional outfit.",
+    content_en: "# How much does Áo Dài rental cost in Hội An?\n[Add a concise pricing answer and comparison notes here.]\n\n## Outfit Rental Only: 200,000–300,000 VND\n[INHERE RENTAL PROMO BLOCK — outfit and basic matching accessories.]\n\n# What is included with a rental?\n[Add a Q&A answer and supporting image here.]\n\n# How do I choose the right style and size?\n[Add fit, colour and comfort advice here.]\n\n## Want makeup and professional photos too?\n[INHERE UP-SELL BLOCK — link to Full-Combo packages.]",
+    status: "draft", cover_image: "", title_vi: "", excerpt_vi: "", content_vi: "", category_vi: "", published_at: null, __template: true,
+  },
+  {
+    slug: "most-beautiful-photo-spots-hoi-an",
+    title_en: "Top 7 Most Beautiful Photo Spots in Hội An (Plus Áo Dài Posing Tips)",
+    category_en: "Photography Spots",
+    excerpt_en: "Seven photogenic Hội An locations with timing, crowd and Áo Dài posing advice for each stop.",
+    content_en: "# 1. The Japanese Covered Bridge\n[Add location copy, image and posing tip.]\n\n# 2. The yellow lanes of the Ancient Town\n[Add location copy, image and posing tip.]\n\n# 3. Hội An riverside\n[Add location copy, image and posing tip.]\n\n## 1.5-hour Professional Photoshoot\n[INHERE IN-CONTENT PROMO BLOCK — professional direction and Ancient Town locations.]\n\n# 4. Lantern streets\n[Add location copy, image and posing tip.]\n\n# 5. Old heritage houses\n[Add location copy, image and posing tip.]\n\n# 6. A rooftop café\n[Add location copy, image and posing tip.]\n\n# 7. A quiet riverside lane\n[Add location copy, image and posing tip.]",
+    status: "draft", cover_image: "", title_vi: "", excerpt_vi: "", content_vi: "", category_vi: "", published_at: null, __template: true,
+  },
+  {
+    slug: "hoi-an-travel-guide-couples-friend-groups",
+    title_en: "Hội An Travel Guide for Couples and Friend Groups: What You Need to Prepare",
+    category_en: "Hội An Travel Guides",
+    excerpt_en: "A preparation checklist for couples and friends planning outfits, transport, timing and memorable group photographs in Hội An.",
+    content_en: "# Choose the right time and meeting point\n[Add practical arrival, weather and timing advice.]\n\n# Coordinate outfits without looking identical\n[Add styling tips for couples and groups.]\n\n## Couple Package\n[INHERE COUPLE PACKAGE BLOCK — highlight outfit, accessories and female makeup.]\n\n# Prepare for comfort in the Ancient Town\n[Add footwear, belongings and hydration advice.]\n\n## Friend Group Package\n[INHERE FRIEND GROUP BLOCK — emphasize makeup is included for all females.]\n\n# Build an easy photo plan\n[Add group posing and location preparation tips.]",
+    status: "draft", cover_image: "", title_vi: "", excerpt_vi: "", content_vi: "", category_vi: "", published_at: null, __template: true,
+  },
+  {
+    slug: "best-vintage-cafes-tea-shops-hoi-an",
+    title_en: "A Guide to the Best Vintage Cafes & Tea Shops in the Heart of Hội An",
+    category_en: "Hội An Travel Guides",
+    excerpt_en: "A curated list of atmospheric vintage cafés and tea shops for quiet breaks, local flavours and beautiful Hội An photographs.",
+    content_en: "# 1. [Café or tea shop name]\n[Add review, address, price range and high-resolution image.]\n\n# 2. [Café or tea shop name]\n[Add review, best order and atmosphere notes.]\n\n## Turn the café stop into a photograph\n[Rooftop café photoshoots are included in selected INHERE packages — add link/banner here.]\n\n# 3. [Café or tea shop name]\n[Add review, opening times and photography notes.]\n\n# 4. [Café or tea shop name]\n[Add review and local recommendation.]\n\n# Practical café etiquette and timing\n[Add a concise closing guide here.]",
+    status: "draft", cover_image: "", title_vi: "", excerpt_vi: "", content_vi: "", category_vi: "", published_at: null, __template: true,
+  },
+];
+
 const sections: Section[] = [
   {
     table: "booking_requests",
@@ -434,7 +477,13 @@ export default function AdminPanel() {
     const { data, error } = await query;
     setLoading(false);
     if (error) setMessage(error.message);
-    else setRows((data || []) as Row[]);
+    else {
+      const records = (data || []) as Row[];
+      if (active === "blog_posts") {
+        const slugs = new Set(records.map((row) => row.slug));
+        setRows([...records, ...seoDraftTemplates.filter((row) => !slugs.has(row.slug))]);
+      } else setRows(records);
+    }
   }, [active, section.order]);
   useEffect(() => {
     if (!isAdmin) return;
@@ -463,6 +512,7 @@ export default function AdminPanel() {
     delete payload.id;
     delete payload.created_at;
     delete payload.updated_at;
+    delete payload.__template;
     if (
       active === "blog_posts" &&
       payload.status === "published" &&
