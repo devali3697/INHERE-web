@@ -16,6 +16,16 @@ import TestimonialsSection, {
 } from "@/components/ui/community-testimonial";
 import AdminPanel from "@/components/admin/admin-panel";
 import { supabase } from "@/lib/supabase";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLocationDot,
+  FaPhone,
+  FaTiktok,
+  FaWhatsapp,
+  FaYoutube,
+} from "react-icons/fa6";
+import { SiKakaotalk, SiLine, SiWechat } from "react-icons/si";
 
 type Language = "en" | "vi";
 
@@ -91,8 +101,11 @@ const copy = {
 };
 
 const WA = "https://wa.me/84898199099";
-const IG = "https://www.instagram.com/";
-const logo = "/inhere-logo.jpg";
+const IG = "https://www.instagram.com/inhere.studiohoian/";
+const FB = "https://www.facebook.com/ThueAoDaiHoiAn.InHere";
+const TIKTOK = "https://www.tiktok.com/@inhere.studiohoian/";
+const YOUTUBE = "https://www.youtube.com/@Inhere.studioHoiAn";
+const logo = "/inhere-facebook-avatar.jpg";
 
 const images = {
   hero: "https://images.unsplash.com/photo-1768017093068-7d0a34d0add0?auto=format&fit=crop&w=2560&q=94",
@@ -1345,6 +1358,39 @@ function Booking({
 }
 
 function Footer({ onBook }: { onBook: () => void }) {
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [date, setDate] = useState("");
+  const [service, setService] = useState("Rental Ao Dai");
+  const [submitting, setSubmitting] = useState(false);
+  const [bookingMessage, setBookingMessage] = useState("");
+
+  const submitBooking = async (event: FormEvent) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setBookingMessage("");
+    const { error } = await supabase.from("booking_requests").insert({
+      customer_name: name.trim(),
+      phone: contact.trim(),
+      preferred_date: date,
+      service_name: service,
+      guest_count: 1,
+      notes: "Submitted from the footer booking form",
+    });
+    setSubmitting(false);
+    if (error) {
+      setBookingMessage(
+        "We couldn't send your request. Please contact us on WhatsApp.",
+      );
+      return;
+    }
+    setName("");
+    setContact("");
+    setDate("");
+    setService("Rental Ao Dai");
+    setBookingMessage("Thank you — your booking request has been received.");
+  };
+
   return (
     <footer>
       <div className="footer-cta">
@@ -1363,49 +1409,162 @@ function Footer({ onBook }: { onBook: () => void }) {
       </div>
       <div className="footer-main">
         <div className="footer-logo">
-          <div className="logo-crop">
-            <img
-              src={logo}
-              alt="INHERE Ao Dai Makeup Photoshoot official logo"
-            />
+          <div className="footer-avatar">
+            <img src={logo} alt="INHERE Ao Dai, makeup and photoshoot" />
           </div>
           <p>
             Premium photography, Vietnamese styling and curated cultural
             experiences in Hội An.
           </p>
-          <a className="footer-social" href={IG} target="_blank">
-            <span>◎</span> Follow our stories on Instagram <Arrow />
-          </a>
+          <iframe
+            className="footer-map"
+            title="INHERE Studio at 24 Đào Duy Từ, Hội An"
+            src="https://www.google.com/maps?q=24%20%C4%90%C3%A0o%20Duy%20T%E1%BB%AB%2C%20H%E1%BB%99i%20An&output=embed"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
-        <div>
-          <p className="eyebrow light">EXPLORE</p>
-          <a href="/services">Photoshoots</a>
-          <a href="/albums">Albums</a>
-          <a href="/experiences">Experiences</a>
-          <a href="/blog">Journal</a>
-        </div>
-        <div>
-          <p className="eyebrow light">CONNECT</p>
-          <a href={WA} target="_blank">
-            WhatsApp
+        <div className="footer-connect">
+          <p className="eyebrow light">CONNECT &amp; CONTACT</p>
+          <a
+            className="footer-address"
+            href="https://www.google.com/maps/search/?api=1&query=24%20%C4%90%C3%A0o%20Duy%20T%E1%BB%AB%2C%20H%E1%BB%99i%20An"
+            target="_blank"
+          >
+            <FaLocationDot /> 24 Đào Duy Từ, Hội An
           </a>
-          <a href={IG} target="_blank">
-            Instagram
-          </a>
-          <a href="/contact">Contact</a>
-          <a href="/about">About INHERE</a>
-          <a href="/book">Booking request</a>
-        </div>
-        <div>
-          <p className="eyebrow light">CONTACT</p>
-          <a href={WA} target="_blank">
-            +84 898 199 099
-          </a>
-          <p>Hội An, Vietnam</p>
-          <p>English / Vietnamese</p>
+          <div className="footer-contact-list">
+            <a href="tel:+84898199099">
+              <span className="footer-channel-icon">
+                <FaPhone />
+              </span>
+              <span className="footer-channel-copy">
+                <small>Phone / Hotline</small>
+                <b>+84 898 199 099</b>
+              </span>
+            </a>
+            <a href={WA} target="_blank">
+              <span className="footer-channel-icon whatsapp">
+                <FaWhatsapp />
+              </span>
+              <span className="footer-channel-copy">
+                <small>WhatsApp</small>
+                <b>+84 898 199 099</b>
+              </span>
+            </a>
+            <a
+              href="line://ti/p/+84898199099"
+              aria-label="Open LINE and contact INHERE at +84 898 199 099"
+            >
+              <span className="footer-channel-icon line">
+                <SiLine />
+              </span>
+              <span className="footer-channel-copy">
+                <small>LINE</small>
+                <b>+84 898 199 099</b>
+              </span>
+            </a>
+            <a
+              href="kakaotalk://"
+              aria-label="Open KakaoTalk to contact INHERE at +84 898 199 099"
+            >
+              <span className="footer-channel-icon kakao">
+                <SiKakaotalk />
+              </span>
+              <span className="footer-channel-copy">
+                <small>KakaoTalk</small>
+                <b>+84 898 199 099</b>
+              </span>
+            </a>
+            <a
+              href="weixin://"
+              aria-label="Open WeChat to contact INHERE at +84 898 199 099"
+            >
+              <span className="footer-channel-icon wechat">
+                <SiWechat />
+              </span>
+              <span className="footer-channel-copy">
+                <small>WeChat</small>
+                <b>+84 898 199 099</b>
+              </span>
+            </a>
+          </div>
+          <div className="footer-social-icons" aria-label="Social media">
+            <a href={IG} target="_blank" aria-label="Instagram">
+              <FaInstagram />
+            </a>
+            <a href={FB} target="_blank" aria-label="Facebook">
+              <FaFacebookF />
+            </a>
+            <a href={TIKTOK} target="_blank" aria-label="TikTok">
+              <FaTiktok />
+            </a>
+            <a href={YOUTUBE} target="_blank" aria-label="YouTube">
+              <FaYoutube />
+            </a>
+          </div>
           <span className="footer-status">
             <i /> Currently accepting bookings
           </span>
+        </div>
+        <div className="footer-booking">
+          <p className="eyebrow light">DIRECT BOOKING</p>
+          <h3>Book Your Experience</h3>
+          <form onSubmit={submitBooking}>
+            <label>
+              Name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Your full name"
+              />
+            </label>
+            <label>
+              WhatsApp / Social App link
+              <input
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                required
+                placeholder="Number, username or profile link"
+              />
+            </label>
+            <label>
+              Expected Date
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Service of Interest
+              <select
+                value={service}
+                onChange={(e) => setService(e.target.value)}
+              >
+                {[
+                  "Rental Ao Dai",
+                  "Full Combo",
+                  "Solo",
+                  "Couple",
+                  "Family",
+                  "Group",
+                ].map((option) => (
+                  <option key={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" disabled={submitting}>
+              {submitting ? "Sending…" : "Send Booking Request"} <Arrow />
+            </button>
+            {bookingMessage && (
+              <p className="footer-form-message" role="status">
+                {bookingMessage}
+              </p>
+            )}
+          </form>
         </div>
       </div>
       <div className="footer-bottom">

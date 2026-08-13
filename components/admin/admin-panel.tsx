@@ -17,6 +17,7 @@ type Field = {
     | "select"
     | "image"
     | "video"
+    | "date"
     | "album";
   options?: string[];
   required?: boolean;
@@ -33,6 +34,27 @@ type Section = {
 type Row = Record<string, unknown> & { id?: string };
 
 const sections: Section[] = [
+  {
+    table: "booking_requests",
+    label: "Booking Requests",
+    description: "Review and manage direct booking enquiries from the website.",
+    titleKey: "customer_name",
+    order: "created_at",
+    defaults: {},
+    fields: [
+      { key: "customer_name", label: "Guest name", required: true },
+      { key: "phone", label: "WhatsApp / social contact", required: true },
+      { key: "preferred_date", label: "Expected date", type: "date" },
+      { key: "service_name", label: "Service of interest", required: true },
+      {
+        key: "status",
+        label: "Booking status",
+        type: "select",
+        options: ["new", "contacted", "confirmed", "completed", "cancelled"],
+      },
+      { key: "notes", label: "Notes", type: "textarea" },
+    ],
+  },
   {
     table: "page_content",
     label: "Pages",
@@ -521,7 +543,9 @@ export default function AdminPanel() {
     return (
       <main className="admin-login">
         <section>
-          <a className="admin-login-back" href="/">← Back to website</a>
+          <a className="admin-login-back" href="/">
+            ← Back to website
+          </a>
           <div className="admin-login-brand">
             <span>INHERE</span>
             <small>CONTENT STUDIO · HỘI AN</small>
@@ -565,7 +589,11 @@ export default function AdminPanel() {
         <div>
           <div className="admin-login-visual-copy">
             <p>INHERE / 01</p>
-            <h2>Stories are<br /><em>kept here.</em></h2>
+            <h2>
+              Stories are
+              <br />
+              <em>kept here.</em>
+            </h2>
             <span>CONTENT · ALBUMS · JOURNAL · EXPERIENCES</span>
           </div>
         </div>
@@ -617,9 +645,11 @@ export default function AdminPanel() {
             <h1>{section.label}</h1>
             <span>{section.description}</span>
           </div>
-          <button onClick={() => setEditing({ ...section.defaults })}>
-            + Add new
-          </button>
+          {active !== "booking_requests" && (
+            <button onClick={() => setEditing({ ...section.defaults })}>
+              + Add new
+            </button>
+          )}
         </header>
         {message && (
           <div className="admin-message">
@@ -656,12 +686,21 @@ export default function AdminPanel() {
                   />
                 )}
                 <div>
-                  <p>{String(row.slug || row.page_key || section.label)}</p>
+                  <p>
+                    {String(
+                      row.slug ||
+                        row.page_key ||
+                        row.service_name ||
+                        section.label,
+                    )}
+                  </p>
                   <h3>{String(row[section.titleKey] || "Untitled")}</h3>
                   <span>
-                    {row.is_published === false || row.status === "draft"
-                      ? "Draft / hidden"
-                      : "Published"}
+                    {active === "booking_requests"
+                      ? String(row.status || "new")
+                      : row.is_published === false || row.status === "draft"
+                        ? "Draft / hidden"
+                        : "Published"}
                   </span>
                 </div>
                 <button onClick={() => setEditing({ ...row })}>Edit</button>
@@ -692,12 +731,7 @@ export default function AdminPanel() {
             <div className="admin-fields">
               <label className="wide">
                 Login email
-                <input
-                  type="email"
-                  value={accountEmail}
-                  disabled
-                  readOnly
-                />
+                <input type="email" value={accountEmail} disabled readOnly />
                 <small>
                   Email changes are temporarily disabled. Contact the site
                   administrator if this address needs to be updated.
@@ -875,7 +909,13 @@ export default function AdminPanel() {
                     </div>
                   ) : (
                     <input
-                      type={field.type === "number" ? "number" : "text"}
+                      type={
+                        field.type === "number"
+                          ? "number"
+                          : field.type === "date"
+                            ? "date"
+                            : "text"
+                      }
                       value={String(editing[field.key] ?? "")}
                       onChange={(e) =>
                         setEditing({
