@@ -234,7 +234,10 @@ const articles = [
   },
 ];
 
-type CmsService = (typeof services)[number];
+type CmsService = (typeof services)[number] & {
+  priceLabel?: string;
+  inclusions?: string[];
+};
 type CmsAlbum = (typeof albums)[number];
 type CmsExperience = (typeof experiences)[number];
 type CmsArticle = (typeof articles)[number] & { content?: string; date?: string };
@@ -265,6 +268,7 @@ type CmsPage = {
   body_en: string;
   body_vi: string;
   hero_image: string | null;
+  sort_order?: number;
 };
 type CmsState = {
   services: CmsService[];
@@ -1098,6 +1102,8 @@ type GoogleReviewData = {
 };
 
 function GoogleReviews() {
+  const { pages } = useCms();
+  const settings = pages["google-reviews-settings"];
   const [data, setData] = useState<GoogleReviewData | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -1113,8 +1119,8 @@ function GoogleReviews() {
       active = false;
     };
   }, []);
-  const profile =
-    data?.googleMapsUri || "https://share.google/f9N75ZoAa9r6lJhJ1";
+  const [fallbackRating, fallbackCount] = (settings?.body_en || "5.0|952").split("|");
+  const profile = data?.googleMapsUri || settings?.subtitle_en || "https://share.google/f9N75ZoAa9r6lJhJ1";
   return (
     <section
       className="google-reviews section"
@@ -1124,7 +1130,7 @@ function GoogleReviews() {
         <div>
           <p className="eyebrow">AUTHENTIC GOOGLE REVIEWS</p>
           <h2 id="google-reviews-title">
-            Loved by guests from around the world.
+            {settings?.title_en || "Loved by guests from around the world."}
           </h2>
         </div>
         <a
@@ -1135,7 +1141,7 @@ function GoogleReviews() {
         >
           <span className="google-g">G</span>
           <div>
-            <strong>{data ? data.rating.toFixed(1) : "5.0"}</strong>
+            <strong>{data ? data.rating.toFixed(1) : fallbackRating}</strong>
             <span
               className="google-stars"
               aria-label={`${data?.rating || 5} out of 5 stars`}
@@ -1143,7 +1149,7 @@ function GoogleReviews() {
               ★★★★★
             </span>
             <small>
-              {data ? `${data.reviewCount} Google reviews` : "Google Reviews"}
+              {data ? `${data.reviewCount} Google reviews` : `${fallbackCount} Google reviews`}
             </small>
           </div>
           <b>View profile ↗</b>
@@ -1192,17 +1198,21 @@ function GoogleReviews() {
         </div>
       ) : (
         <div className="google-review-fallback">
-          <p>
-            Explore verified guest experiences directly on our Google profile.
-          </p>
-          <a
-            className="button dark-button"
-            href={profile}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Read Google Reviews <Arrow />
-          </a>
+          <div>
+            <p className="eyebrow">GOOGLE MAPS · LIVE PROFILE</p>
+            <h3>Read our guest reviews here.</h3>
+            <p>
+              Open the review count inside the Google panel to browse verified
+              guest experiences without leaving this page.
+            </p>
+          </div>
+          <iframe
+            title="INHERE Google reviews and location"
+            src="https://www.google.com/maps?q=place_id:ChIJ-aRKuIMPQjERZtW8Nn4TC2Q&output=embed"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
         </div>
       )}
       <p className="google-attribution">
@@ -1600,6 +1610,11 @@ function Booking({
 }
 
 function Footer({ onBook }: { onBook: () => void }) {
+  const { pages } = useCms();
+  const footerCta = pages["footer-cta"];
+  const footerBrand = pages["footer-brand"];
+  const footerContact = pages["footer-contact"];
+  const social = (key: string, fallback: string) => pages[`footer-${key}`]?.body_en || fallback;
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [date, setDate] = useState("");
@@ -1639,14 +1654,12 @@ function Footer({ onBook }: { onBook: () => void }) {
         <div className="footer-orbit" aria-hidden="true">
           ✦
         </div>
-        <p className="eyebrow light">LET’S CREATE SOMETHING BEAUTIFUL</p>
+        <p className="eyebrow light">{footerCta?.body_en || "LET’S CREATE SOMETHING BEAUTIFUL"}</p>
         <h2>
-          Your Hội An story
-          <br />
-          <em>starts here.</em>
+          {footerCta?.title_en || "Your Hội An story starts here."}
         </h2>
         <button className="button ivory" onClick={onBook}>
-          Book Your Experience <Arrow />
+          {footerCta?.subtitle_en || "Book Your Experience"} <Arrow />
         </button>
       </div>
       <div className="footer-main">
@@ -1655,8 +1668,7 @@ function Footer({ onBook }: { onBook: () => void }) {
             <img src={logo} alt="INHERE Ao Dai, makeup and photoshoot" />
           </div>
           <p>
-            Premium photography, Vietnamese styling and curated cultural
-            experiences in Hội An.
+            {footerBrand?.title_en || "Premium photography, Vietnamese styling and curated cultural experiences in Hội An."}
           </p>
           <iframe
             className="footer-map"
@@ -1673,7 +1685,7 @@ function Footer({ onBook }: { onBook: () => void }) {
             href="https://www.google.com/maps/search/?api=1&query=24%20%C4%90%C3%A0o%20Duy%20T%E1%BB%AB%2C%20H%E1%BB%99i%20An"
             target="_blank"
           >
-            <FaLocationDot /> 24 Đào Duy Từ, Hội An
+            <FaLocationDot /> {footerContact?.title_en || "24 Đào Duy Từ, Hội An"}
           </a>
           <div className="footer-contact-list">
             <a href="tel:+84898199099">
@@ -1682,7 +1694,7 @@ function Footer({ onBook }: { onBook: () => void }) {
               </span>
               <span className="footer-channel-copy">
                 <small>Phone / Hotline</small>
-                <b>+84 898 199 099</b>
+                <b>{footerContact?.subtitle_en || "+84 898 199 099"}</b>
               </span>
             </a>
             <a href={WA} target="_blank">
@@ -1732,16 +1744,16 @@ function Footer({ onBook }: { onBook: () => void }) {
             </a>
           </div>
           <div className="footer-social-icons" aria-label="Social media">
-            <a href={IG} target="_blank" aria-label="Instagram">
+            <a href={social("instagram", IG)} target="_blank" aria-label="Instagram">
               <FaInstagram />
             </a>
-            <a href={FB} target="_blank" aria-label="Facebook">
+            <a href={social("facebook", FB)} target="_blank" aria-label="Facebook">
               <FaFacebookF />
             </a>
-            <a href={TIKTOK} target="_blank" aria-label="TikTok">
+            <a href={social("tiktok", TIKTOK)} target="_blank" aria-label="TikTok">
               <FaTiktok />
             </a>
-            <a href={YOUTUBE} target="_blank" aria-label="YouTube">
+            <a href={social("youtube", YOUTUBE)} target="_blank" aria-label="YouTube">
               <FaYoutube />
             </a>
           </div>
@@ -1987,7 +1999,9 @@ const lookbookFallback = [
 ];
 
 function LookbookPage() {
-  const { albums } = useCms();
+  const { albums, pages } = useCms();
+  const hero = pages["lookbook-hero"];
+  const cta = pages["lookbook-cta"];
   const categories = [
     ["All", "Tất cả"],
     ["Classic Áo Dài", "Áo Dài truyền thống"],
@@ -2001,8 +2015,9 @@ function LookbookPage() {
   const [filter, setFilter] = useState("All");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const cmsImages = albums.map((album, index) => {
+    const exactCategory = categories.find(([en]) => en === album.meta)?.[0];
     const meta = `${album.meta} ${album.title}`.toLowerCase();
-    const category = meta.includes("couple") || meta.includes("love")
+    const category = exactCategory || (meta.includes("couple") || meta.includes("love")
       ? "Couples & Romance"
       : meta.includes("lantern") || meta.includes("night")
         ? "Lantern Night Vibe"
@@ -2010,7 +2025,7 @@ function LookbookPage() {
           ? "Golden Hour & Rooftops"
           : meta.includes("family") || meta.includes("group")
             ? "Classic Áo Dài"
-            : "The Solo Muse";
+            : "The Solo Muse");
     return { src: album.image, category, alt: `${album.title} — outdoor photography in Hội An`, key: `cms-${index}` };
   });
   const allImages = [...cmsImages, ...lookbookFallback.map((item, index) => ({ ...item, key: `fallback-${index}` }))]
@@ -2019,7 +2034,7 @@ function LookbookPage() {
   const active = activeIndex === null ? null : visible[activeIndex];
   const move = useCallback((direction: number) => {
     setActiveIndex((current) => current === null || !visible.length ? current : (current + direction + visible.length) % visible.length);
-  }, [visible.length]);
+  }, [visible.length, setActiveIndex]);
 
   useEffect(() => {
     if (!active) return;
@@ -2035,11 +2050,11 @@ function LookbookPage() {
 
   return <main className="lookbook-page">
     <section className="lookbook-hero">
-      <img src={images.lantern} alt="Vibrant lantern night photography in Hội An" />
+      <img src={hero?.hero_image || images.lantern} alt="Vibrant outdoor photography in Hội An" />
       <div />
-      <p>OUTDOOR STORIES · HỘI AN</p>
-      <h1>The INHERE <em>Lookbook</em></h1>
-      <span>Timeless moments captured in the heart of Hội An.</span>
+      <p>{hero?.body_en || "OUTDOOR STORIES · HỘI AN"}</p>
+      <h1>{hero?.title_en || "The INHERE Lookbook"}</h1>
+      <span>{hero?.subtitle_en || "Timeless moments captured in the heart of Hội An."}</span>
       <a href="#lookbook-gallery">Explore the stories <span>↓</span></a>
     </section>
     <section className="lookbook-gallery-section" id="lookbook-gallery">
@@ -2055,7 +2070,7 @@ function LookbookPage() {
       </div>
       {!visible.length && <p className="lookbook-empty">More outdoor stories for this collection are coming soon.</p>}
     </section>
-    <section className="lookbook-cta"><p>YOUR HỘI AN STORY</p><h2>Inspired by these stories?<br /><em>Let us capture yours.</em></h2><a href="/#footer-booking-form">Book Your Experience <Arrow /></a></section>
+    <section className="lookbook-cta"><p>YOUR HỘI AN STORY</p><h2>{cta?.title_en || "Inspired by these stories? Let us capture yours."}</h2><a href={cta?.body_en || "/#footer-booking-form"}>{cta?.subtitle_en || "Book Your Experience"} <Arrow /></a></section>
     {active && <div className="lookbook-lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer">
       <button className="lookbook-close" onClick={() => setActiveIndex(null)} aria-label="Close lightbox">Close ×</button>
       <button className="lookbook-prev" onClick={() => move(-1)} aria-label="Previous image">←</button>
@@ -2115,31 +2130,61 @@ const packageDetails = [
 ];
 
 function FaqPoliciesPage() {
+  const { pages, services: cmsServices } = useCms();
+  const managedFaqs = Object.values(pages)
+    .filter((page) => page.page_key.startsWith("faq-"))
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const faqNotes: Record<string, string> = {
+    "Booking & Weather": "Planning your outdoor experience",
+    "Photos & Edits": "Delivery, selection and timing",
+    "Outfits & Makeup": "Rental flexibility and care",
+  };
+  const visibleFaqGroups = managedFaqs.length
+    ? Array.from(new Set(managedFaqs.map((item) => item.title_en))).map(
+        (title) => ({
+          title,
+          note: faqNotes[title] || "Helpful information",
+          items: managedFaqs
+            .filter((item) => item.title_en === title)
+            .map((item) => [item.subtitle_en, item.body_en]),
+        }),
+      )
+    : faqGroups;
+  const managedPrices = Object.values(pages).filter((page) => page.page_key.startsWith("faq-price-")).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const visiblePrices = managedPrices.length ? managedPrices.map((item, index) => [String(index + 1), item.title_en, item.title_vi, item.subtitle_en]) : fullPackagePrices;
+  const managedPackages = packageDetails.map((fallback) => {
+    const match = cmsServices.find((item) => item.slug.startsWith("full-combo-") && item.title === fallback.name);
+    return match ? { ...fallback, price: match.priceLabel || fallback.price, intro: match.copy || fallback.intro, items: match.inclusions?.length ? match.inclusions : fallback.items } : fallback;
+  });
+  const managedShared = Object.values(pages).filter((page) => page.page_key.startsWith("shared-detail-")).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   return <main className="faq-page">
     <section className="faq-hero"><img src={images.oldtown} alt="Outdoor INHERE photography experience in Hội An" /><div /><p>BEFORE YOUR EXPERIENCE · INHERE</p><h1>Frequently Asked <em>Questions</em></h1><span>Everything you need to know before your Hội An experience with INHERE.</span><a href="#faq-questions">Find your answer <span>↓</span></a></section>
     <section className="faq-intro" id="faq-questions"><div><p>QUICK ANSWERS</p><h2>Plan with confidence.<br /><em>Arrive ready to enjoy.</em></h2></div><p>Our experiences take place outdoors across Hội An’s Ancient Town. These answers explain weather planning, delivery times, outfits, makeup and how each package works.</p></section>
     <section className="faq-accordions">
-      {faqGroups.map((group, groupIndex) => <article key={group.title} className="faq-group"><header><span>0{groupIndex + 1}</span><div><p>{group.note}</p><h2>{group.title}</h2></div></header><div>{group.items.map(([question, answer], index) => <details key={question} open={groupIndex === 0 && index === 0}><summary><span>{question}</span><i aria-hidden="true">+</i></summary><p>{answer}</p></details>)}</div></article>)}
+      {visibleFaqGroups.map((group, groupIndex) => <article key={group.title} className="faq-group"><header><span>0{groupIndex + 1}</span><div><p>{group.note}</p><h2>{group.title}</h2></div></header><div>{group.items.map(([question, answer], index) => <details key={question} open={groupIndex === 0 && index === 0}><summary><span>{question}</span><i aria-hidden="true">+</i></summary><p>{answer}</p></details>)}</div></article>)}
     </section>
     <section className="faq-price-section"><header><p>FULL PACKAGE PRICE · BẢNG GIÁ TRỌN GÓI</p><h2>Clear pricing for<br /><em>every kind of story.</em></h2></header>
-      <div className="faq-price-table-wrap"><table className="faq-price-table"><thead><tr><th>No.<small>STT</small></th><th>Full Package Services<small>Dịch vụ trọn gói</small></th><th>Price<small>Giá</small></th></tr></thead><tbody>{fullPackagePrices.map(([number, name, vi, price]) => <tr key={number}><td>{number}</td><td><strong>{name}</strong><span>{vi}</span></td><td>{price}</td></tr>)}</tbody></table></div>
-      <div className="faq-mobile-prices">{fullPackagePrices.map(([number, name, vi, price]) => <article key={number}><span>{number}</span><div><h3>{name}</h3><p>{vi}</p><b>{price}</b></div></article>)}</div>
+      <div className="faq-price-table-wrap"><table className="faq-price-table"><thead><tr><th>No.<small>STT</small></th><th>Full Package Services<small>Dịch vụ trọn gói</small></th><th>Price<small>Giá</small></th></tr></thead><tbody>{visiblePrices.map(([number, name, vi, price]) => <tr key={number}><td>{number}</td><td><strong>{name}</strong><span>{vi}</span></td><td>{price}</td></tr>)}</tbody></table></div>
+      <div className="faq-mobile-prices">{visiblePrices.map(([number, name, vi, price]) => <article key={number}><span>{number}</span><div><h3>{name}</h3><p>{vi}</p><b>{price}</b></div></article>)}</div>
     </section>
-    <section className="faq-package-details"><header><p>WHAT EACH PACKAGE INCLUDES</p><h2>Choose the experience<br /><em>that fits your group.</em></h2></header><div>{packageDetails.map((pkg) => <article key={pkg.name}><span>{pkg.number}</span><p>{pkg.intro}</p><h3>{pkg.name}</h3><strong>{pkg.price}</strong><ul>{pkg.items.map((item) => <li key={item}>{item}</li>)}</ul><a href={`/services?package=${encodeURIComponent(pkg.name)}`}>View &amp; Book Package <Arrow /></a></article>)}</div></section>
-    <section className="faq-shared-details"><div><p>APPLIES TO EVERY FULL PACKAGE</p><h2>Your outdoor photoshoot,<br /><em>from start to finish.</em></h2></div><ol>
+    <section className="faq-package-details"><header><p>WHAT EACH PACKAGE INCLUDES</p><h2>Choose the experience<br /><em>that fits your group.</em></h2></header><div>{managedPackages.map((pkg) => <article key={pkg.name}><span>{pkg.number}</span><p>{pkg.intro}</p><h3>{pkg.name}</h3><strong>{pkg.price}</strong><ul>{pkg.items.map((item) => <li key={item}>{item}</li>)}</ul><a href={`/services?package=${encodeURIComponent(pkg.name)}`}>View &amp; Book Package <Arrow /></a></article>)}</div></section>
+    <section className="faq-shared-details"><div><p>APPLIES TO EVERY FULL PACKAGE</p><h2>Your outdoor photoshoot,<br /><em>from start to finish.</em></h2></div>{managedShared.length ? <ol>{managedShared.map((item, index) => <li key={item.page_key}><span>{String(index + 1).padStart(2, "0")}</span><p><b>{item.title_en}</b>{item.body_en}</p></li>)}</ol> : <ol>
       <li><span>01</span><p><b>Iconic Hội An locations</b>The approximately 1.5-hour shoot may cover the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys and other beautiful Ancient Town spots.</p></li>
       <li><span>02</span><p><b>Optional rooftop café</b>A panoramic rooftop café can be included. You only need to purchase a drink for access and photography there.</p></li>
       <li><span>03</span><p><b>Local guidance</b>Our Hội An photographer knows the most photogenic routes and will guide your posing throughout the session.</p></li>
       <li><span>04</span><p><b>Unlimited photographs</b>There is no limit on photos taken. All originals arrive through Google Drive the same day, followed by 15–40 edited selections.</p></li>
       <li><span>05</span><p><b>A flexible pace</b>If crowds slow the route, we are happy to extend shooting time when needed so you can visit multiple spots comfortably.</p></li>
       <li><span>06</span><p><b>Everything included</b>Your package already includes outfit, makeup, hairstyling and photoshoot. Choose any available outfit from our collection without restriction.</p></li>
-    </ol></section>
+    </ol>}</section>
     <section className="faq-bottom-cta"><p>READY TO PLAN YOUR DAY?</p><h2>Choose your package.<br /><em>We’ll shape the rest.</em></h2><div><a href="/services">Explore Packages <Arrow /></a><a href="/#footer-booking-form">Book Your Experience <Arrow /></a></div></section>
   </main>;
 }
 
 function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
-  const { albums } = useCms();
+  const { albums, services: cmsServices, pages } = useCms();
+  const servicesHero = pages["services-hero"];
+  const rentalContent = pages["services-rental"];
+  const instagramContent = pages["services-instagram"];
   const [filter, setFilter] = useState("All");
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
   const cmsGallery = albums.map((album, index) => {
@@ -2162,6 +2207,24 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
     "Unlimited studio accessories",
     "All raw photos + 15–40 edited photos",
   ];
+  const editablePackages = pricingPackages.map((fallback) => {
+    const managed = cmsServices.find(
+      (service) =>
+        service.slug.startsWith("full-combo-") &&
+        service.title === fallback.title,
+    );
+    if (!managed) return { ...fallback, inclusions: shared };
+    const inclusions = managed.inclusions?.length
+      ? managed.inclusions
+      : [fallback.makeup, ...shared];
+    return {
+      title: managed.title,
+      price: managed.priceLabel || fallback.price,
+      short: managed.copy || fallback.short,
+      makeup: inclusions[0] || fallback.makeup,
+      inclusions: inclusions.slice(1).length ? inclusions.slice(1) : shared,
+    };
+  });
 
   useEffect(() => {
     document.body.style.overflow = lightbox ? "hidden" : "";
@@ -2171,11 +2234,11 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
   return (
     <main className="pricing-page">
       <section className="pricing-hero">
-        <img src={images.oldtown} alt="Hội An Ancient Town" />
+        <img src={servicesHero?.hero_image || images.oldtown} alt="Hội An Ancient Town" />
         <div />
-        <p>INHERE · HỘI AN</p>
-        <h1>Services <em>&amp; Pricing</em></h1>
-        <span>Premium Full-Combo Packages in Hội An. Everything you need in one seamless experience.</span>
+        <p>{servicesHero?.body_en || "INHERE · HỘI AN"}</p>
+        <h1>{servicesHero?.title_en || "Services & Pricing"}</h1>
+        <span>{servicesHero?.subtitle_en || "Premium Full-Combo Packages in Hội An. Everything you need in one seamless experience."}</span>
         <a href="#packages">Explore packages <b>↓</b></a>
       </section>
 
@@ -2185,13 +2248,13 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
           <h2>Choose the experience<br /><em>made for your story.</em></h2>
         </div>
         <div className="pricing-card-grid">
-          {pricingPackages.map((pkg, index) => (
+          {editablePackages.map((pkg, index) => (
             <article className="pricing-card" key={pkg.title}>
               <div className="pricing-card-top"><span>0{index + 1}</span><small>FULL COMBO</small></div>
               <h3>{pkg.title}</h3>
               <strong>{pkg.price}</strong>
               <div className="pricing-primary"><p>{pkg.short}</p><p>{pkg.makeup}</p></div>
-              <ul>{shared.map((item) => <li key={item}>{item}</li>)}</ul>
+              <ul>{pkg.inclusions.map((item) => <li key={item}>{item}</li>)}</ul>
               <button className="pricing-book-button" onClick={() => onBook(pkg.title)}>Book Now <Arrow /></button>
             </article>
           ))}
@@ -2202,22 +2265,22 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
         <div className="pricing-section-head"><p>AT A GLANCE</p><h2>Detailed Pricing Breakdown</h2></div>
         <div className="pricing-table-wrap">
           <table>
-            <thead><tr><th>Full Package Services</th>{pricingPackages.map((pkg) => <th key={pkg.title}>{pkg.title.replace(" Package", "")}</th>)}</tr></thead>
+            <thead><tr><th>Full Package Services</th>{editablePackages.map((pkg) => <th key={pkg.title}>{pkg.title.replace(" Package", "")}</th>)}</tr></thead>
             <tbody>
-              <tr><th>Price</th>{pricingPackages.map((pkg) => <td key={pkg.title}>{pkg.price}</td>)}</tr>
-              <tr><th>Outfits</th>{pricingPackages.map((pkg) => <td key={pkg.title}>{pkg.short}</td>)}</tr>
-              <tr><th>Makeup &amp; hair</th>{pricingPackages.map((pkg) => <td key={pkg.title}>{pkg.makeup}</td>)}</tr>
-              <tr><th>Total duration</th>{pricingPackages.map((pkg) => <td key={pkg.title}>3 hours</td>)}</tr>
-              <tr><th>Photoshoot</th>{pricingPackages.map((pkg) => <td key={pkg.title}>1.5 hours · Ancient Town</td>)}</tr>
-              <tr><th>Accessories</th>{pricingPackages.map((pkg) => <td key={pkg.title}>Unlimited studio selection</td>)}</tr>
-              <tr><th>Photographs</th>{pricingPackages.map((pkg) => <td key={pkg.title}>All raw + 15–40 edited</td>)}</tr>
+              <tr><th>Price</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.price}</td>)}</tr>
+              <tr><th>Outfits</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.short}</td>)}</tr>
+              <tr><th>Makeup &amp; hair</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.makeup}</td>)}</tr>
+              <tr><th>Total duration</th>{editablePackages.map((pkg) => <td key={pkg.title}>3 hours</td>)}</tr>
+              <tr><th>Photoshoot</th>{editablePackages.map((pkg) => <td key={pkg.title}>1.5 hours · Ancient Town</td>)}</tr>
+              <tr><th>Accessories</th>{editablePackages.map((pkg) => <td key={pkg.title}>Unlimited studio selection</td>)}</tr>
+              <tr><th>Photographs</th>{editablePackages.map((pkg) => <td key={pkg.title}>All raw + 15–40 edited</td>)}</tr>
             </tbody>
           </table>
         </div>
       </section>
 
       <section className="rental-banner">
-        <div><p>STANDALONE SERVICE</p><h2>Outfit Rental Only</h2><strong>200,000 – 300,000 VND <small>/ outfit</small></strong></div>
+        <div><p>STANDALONE SERVICE</p><h2>{rentalContent?.title_en || "Outfit Rental Only"}</h2><strong>{rentalContent?.subtitle_en || "200,000 – 300,000 VND"} <small>/ outfit</small></strong></div>
         <p>1 traditional outfit (Áo Dài/Cổ phục), including basic matching accessories: conical hat, wooden fan, hair flower and fabric tote bag.</p>
         <a href="/services/outfit-rental">Rent an Outfit <Arrow /></a>
       </section>
@@ -2232,7 +2295,7 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
         </div>
         <div className="instagram-gallery-cta">
           <p>Want to see more of our daily Hội An stories and behind-the-scenes?</p>
-          <a href="https://www.instagram.com/inhere.studiohoian/" target="_blank" rel="noreferrer"><FaInstagram /> Explore more on Instagram @inhere_trangphuchoian</a>
+          <a href={instagramContent?.body_en || "https://www.instagram.com/inhere.studiohoian/"} target="_blank" rel="noreferrer"><FaInstagram /> {instagramContent?.title_en || "Explore more on Instagram @inhere_trangphuchoian"}</a>
         </div>
       </section>
       {lightbox && <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Album photo"><button onClick={() => setLightbox(null)} aria-label="Close image">Close ×</button><img src={lightbox.src} alt={lightbox.alt} onClick={() => setLightbox(null)} /></div>}
@@ -2750,6 +2813,10 @@ export default function InhereSite({
               title: row.title_en,
               image: row.image_url || images.solo,
               copy: row.description_en,
+              priceLabel: row.price_label || undefined,
+              inclusions: Array.isArray(row.inclusions)
+                ? row.inclusions.map(String)
+                : [],
             })),
             ...services.filter(
               (item) => item.slug === "outfits" || item.slug === "accessories",

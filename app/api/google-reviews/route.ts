@@ -51,6 +51,19 @@ export async function GET() {
       }>;
     };
 
+    const reviews = (place.reviews || []).map((review) => ({
+      id:
+        review.name ||
+        `${review.authorAttribution?.displayName}-${review.publishTime}`,
+      author: review.authorAttribution?.displayName || "Google reviewer",
+      authorUri: review.authorAttribution?.uri || null,
+      avatar: review.authorAttribution?.photoUri || null,
+      rating: review.rating || 5,
+      text: review.text?.text || review.originalText?.text || "",
+      published: review.relativePublishTimeDescription || "",
+      googleMapsUri: review.googleMapsUri || place.googleMapsUri,
+    }));
+
     return Response.json(
       {
         id: place.id,
@@ -60,22 +73,11 @@ export async function GET() {
         reviewCount: place.userRatingCount || 0,
         googleMapsUri:
           place.googleMapsUri || "https://share.google/f9N75ZoAa9r6lJhJ1",
-        reviews: (place.reviews || []).map((review) => ({
-          id:
-            review.name ||
-            `${review.authorAttribution?.displayName}-${review.publishTime}`,
-          author: review.authorAttribution?.displayName || "Google reviewer",
-          authorUri: review.authorAttribution?.uri || null,
-          avatar: review.authorAttribution?.photoUri || null,
-          rating: review.rating || 5,
-          text: review.text?.text || review.originalText?.text || "",
-          published: review.relativePublishTimeDescription || "",
-          googleMapsUri: review.googleMapsUri || place.googleMapsUri,
-        })),
+        reviews,
       },
       {
         headers: {
-          "Cache-Control": "public, max-age=1800, s-maxage=3600",
+          "Cache-Control": "no-store",
         },
       },
     );

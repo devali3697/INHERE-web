@@ -17,6 +17,7 @@ type Field = {
     | "select"
     | "image"
     | "video"
+    | "list"
     | "date"
     | "album";
   options?: string[];
@@ -24,12 +25,16 @@ type Field = {
 };
 type Section = {
   table: string;
+  sourceTable?: string;
   label: string;
   description: string;
   titleKey: string;
   order?: string;
   fields: Field[];
   defaults: Record<string, unknown>;
+  filterPrefix?: string;
+  templates?: Row[];
+  templateGroup?: string;
 };
 type Row = Record<string, unknown> & { id?: string };
 
@@ -76,6 +81,166 @@ const seoDraftTemplates: Row[] = [
   },
 ];
 
+const packageTemplates: Row[] = [
+  {
+    slug: "full-combo-solo",
+    title_en: "Solo Package",
+    title_vi: "Gói 1 người",
+    description_en: "1 outfit & full accessories",
+    description_vi: "1 trang phục và đầy đủ phụ kiện",
+    price_label: "1,800,000 VND",
+    inclusions: [
+      "1 makeup & hair session (female)",
+      "3 hours total experience",
+      "1.5 hours outfit selection & makeup",
+      "1.5 hours photoshoot in the Ancient Town",
+      "Unlimited studio accessories",
+      "All raw photos + 15–40 edited photos",
+    ],
+    image_url: "",
+    is_published: true,
+    sort_order: 1,
+    __template: true,
+  },
+  {
+    slug: "full-combo-couple",
+    title_en: "Couple Package",
+    title_vi: "Gói cặp đôi",
+    description_en: "2 outfits & full accessories",
+    description_vi: "2 trang phục và đầy đủ phụ kiện",
+    price_label: "2,700,000 VND",
+    inclusions: [
+      "1 makeup & hair session (female)",
+      "3 hours total experience",
+      "1.5 hours outfit selection & makeup",
+      "1.5 hours photoshoot in the Ancient Town",
+      "Unlimited studio accessories",
+      "All raw photos + 15–40 edited photos",
+    ],
+    image_url: "",
+    is_published: true,
+    sort_order: 2,
+    __template: true,
+  },
+  {
+    slug: "full-combo-family",
+    title_en: "Family Package",
+    title_vi: "Gói gia đình",
+    description_en: "Outfits & accessories for all",
+    description_vi: "Trang phục và phụ kiện cho cả gia đình",
+    price_label: "Starts from 3,500,000 VND",
+    inclusions: [
+      "Makeup & hair based on selection",
+      "3 hours total experience",
+      "1.5 hours photoshoot in the Ancient Town",
+      "Outfits for all family members",
+      "Unlimited studio accessories",
+      "All raw photos + 15–40 edited photos",
+    ],
+    image_url: "",
+    is_published: true,
+    sort_order: 3,
+    __template: true,
+  },
+  {
+    slug: "full-combo-friend-group",
+    title_en: "Friend Group",
+    title_vi: "Gói nhóm bạn",
+    description_en: "Outfits & accessories for all",
+    description_vi: "Trang phục và phụ kiện cho cả nhóm",
+    price_label: "Starts from 2,900,000 VND",
+    inclusions: [
+      "Makeup & hair for all females",
+      "3 hours total experience",
+      "1.5 hours photoshoot in the Ancient Town",
+      "Outfits for every group member",
+      "Unlimited studio accessories",
+      "All raw photos + 15–40 edited photos",
+    ],
+    image_url: "",
+    is_published: true,
+    sort_order: 4,
+    __template: true,
+  },
+];
+
+const faqTemplates: Row[] = [
+  [
+    "faq-booking-weather-rain",
+    "Booking & Weather",
+    "Planning your outdoor experience",
+    "What happens if it rains on the day of my photoshoot?",
+    "Since we shoot exclusively outdoors in the Ancient Town, weather is a factor. In case of light rain, we offer clear umbrellas for a cinematic concept. If it rains heavily, we will work with you to reschedule the shoot during your stay in Hội An.",
+  ],
+  [
+    "faq-booking-weather-advance",
+    "Booking & Weather",
+    "Planning your outdoor experience",
+    "Do I need to book in advance?",
+    "Yes, especially for Full Combo packages. We recommend booking at least 1–2 weeks in advance. For standalone outfit rentals, walk-ins at our store are welcome.",
+  ],
+  [
+    "faq-photos-edits-delivery",
+    "Photos & Edits",
+    "Delivery, selection and timing",
+    "When will I receive my photos?",
+    "We will send you a Google Drive link containing all the raw photos on the same day of your shoot.",
+  ],
+  [
+    "faq-photos-edits-count",
+    "Photos & Edits",
+    "Delivery, selection and timing",
+    "How many edited photos do I get?",
+    "You will select your favorites, and we will return 15 to 40 professionally edited photos within 3 to 7 days after you make your selection.",
+  ],
+  [
+    "faq-photos-edits-duration",
+    "Photos & Edits",
+    "Delivery, selection and timing",
+    "How long is the photoshoot?",
+    "The outdoor photoshoot itself lasts for 1.5 hours, giving us plenty of time to explore iconic spots. The total experience is 3 hours, including outfit selection and makeup.",
+  ],
+  [
+    "faq-outfits-makeup-rental",
+    "Outfits & Makeup",
+    "Rental flexibility and care",
+    "Can I just rent an outfit without the photoshoot or makeup?",
+    "Absolutely. We offer a standalone outfit rental service starting from 200,000 VND, which includes matching accessories such as a conical hat and wooden fan.",
+  ],
+  [
+    "faq-outfits-makeup-damage",
+    "Outfits & Makeup",
+    "Rental flexibility and care",
+    "What if I damage the rented outfit?",
+    "Minor wear and tear is expected. However, for significant damage—such as burns, large tears or tough stains—a repair or replacement fee will apply based on the specific item.",
+  ],
+].map(([page_key, title_en, _sectionNote, question, answer], index) => ({
+  page_key,
+  title_en,
+  title_vi: "",
+  subtitle_en: question,
+  subtitle_vi: "",
+  body_en: answer,
+  body_vi: "",
+  hero_image: "",
+  is_published: true,
+  sort_order: index + 1,
+  __template: true,
+}));
+
+const pageTemplate = (page_key: string, title_en: string, subtitle_en = "", body_en = "", sort_order = 0): Row => ({
+  page_key, title_en, title_vi: "", subtitle_en, subtitle_vi: "", body_en, body_vi: "", hero_image: "", is_published: true, sort_order, __template: true,
+});
+const faqPriceTemplates: Row[] = [
+  ["1-Person Package", "Gói 1 người", "1,800,000 VND"], ["Couple Package", "Gói couple / Cặp đôi", "2,700,000 VND"], ["2-Person Package (2 Females)", "Gói 2 người – 2 nữ", "2,900,000 VND"], ["3-Person Package (3 Females)", "Gói 3 người – 3 nữ", "3,900,000 VND"], ["4-Person Package (4 Females)", "Gói 4 người – 4 nữ", "4,600,000 VND"], ["5-Person Package (5 Females)", "Gói 5 người – 5 nữ", "5,250,000 VND"], ["6-Person Package (6 Females)", "Gói 6 người – 6 nữ", "6,000,000 VND"], ["Family: 3 Persons / 1 Young Child", "Gói gđ 3 người / 1 bé nhỏ", "3,500,000 VND"], ["Family: 4 Persons / 2 Young Children", "Gói gđ 4 người / 2 bé nhỏ", "4,000,000 VND"], ["Family: 5 Persons / 3 Young Children", "Gói gđ 5 người / 3 bé nhỏ", "4,500,000 VND"], ["Family: 6 Persons / 4 Young Children", "Gói gđ 6 người / 4 bé nhỏ", "5,000,000 VND"],
+].map(([en, vi, price], index) => ({ ...pageTemplate(`faq-price-${String(index + 1).padStart(2, "0")}`, en, price, "", index + 1), title_vi: vi }));
+const sharedDetailTemplates = [
+  ["Iconic Hội An locations", "The approximately 1.5-hour shoot may cover the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys and other beautiful Ancient Town spots."], ["Optional rooftop café", "A panoramic rooftop café can be included. You only need to purchase a drink for access and photography there."], ["Local guidance", "Our Hội An photographer knows the most photogenic routes and will guide your posing throughout the session."], ["Unlimited photographs", "There is no limit on photos taken. All originals arrive through Google Drive the same day, followed by 15–40 edited selections."], ["A flexible pace", "If crowds slow the route, we are happy to extend shooting time when needed so you can visit multiple spots comfortably."], ["Everything included", "Your package already includes outfit, makeup, hairstyling and photoshoot. Choose any available outfit from our collection without restriction."],
+].map(([title, body], index) => pageTemplate(`shared-detail-${String(index + 1).padStart(2, "0")}`, title, "", body, index + 1));
+const cmsPageFields: Field[] = [
+  { key: "page_key", label: "Unique key", required: true }, { key: "title_en", label: "Heading / label", required: true }, { key: "title_vi", label: "Vietnamese / secondary label" }, { key: "subtitle_en", label: "Subtitle / value" }, { key: "body_en", label: "Description / URL", type: "textarea" }, { key: "hero_image", label: "Image", type: "image" }, { key: "sort_order", label: "Display order", type: "number" }, { key: "is_published", label: "Published", type: "boolean" },
+];
+
 const sections: Section[] = [
   {
     table: "booking_requests",
@@ -96,6 +261,37 @@ const sections: Section[] = [
         options: ["new", "contacted", "confirmed", "completed", "cancelled"],
       },
       { key: "notes", label: "Notes", type: "textarea" },
+    ],
+  },
+  {
+    table: "faq_content",
+    sourceTable: "page_content",
+    label: "FAQ Management",
+    description: "Edit FAQ sections, questions, answers and display order.",
+    titleKey: "subtitle_en",
+    order: "sort_order",
+    defaults: {
+      page_key: "faq-new-question",
+      title_en: "General",
+      title_vi: "",
+      subtitle_en: "",
+      subtitle_vi: "",
+      body_en: "",
+      body_vi: "",
+      hero_image: "",
+      is_published: true,
+      sort_order: 99,
+    },
+    fields: [
+      { key: "page_key", label: "Unique key", required: true },
+      { key: "title_en", label: "Section name — English", required: true },
+      { key: "title_vi", label: "Section name — Vietnamese" },
+      { key: "subtitle_en", label: "Question — English", type: "textarea", required: true },
+      { key: "subtitle_vi", label: "Question — Vietnamese", type: "textarea" },
+      { key: "body_en", label: "Answer — English", type: "textarea", required: true },
+      { key: "body_vi", label: "Answer — Vietnamese", type: "textarea" },
+      { key: "sort_order", label: "Display order", type: "number" },
+      { key: "is_published", label: "Published", type: "boolean" },
     ],
   },
   {
@@ -128,6 +324,27 @@ const sections: Section[] = [
       { key: "sort_order", label: "Order", type: "number" },
       { key: "is_published", label: "Published", type: "boolean" },
     ],
+  },
+  {
+    table: "lookbook_settings", sourceTable: "page_content", filterPrefix: "lookbook-", templateGroup: "lookbook", label: "Lookbook Settings", description: "Manage the portfolio hero and bottom call-to-action. Albums and photos are managed below.", titleKey: "title_en", order: "sort_order",
+    templates: [pageTemplate("lookbook-hero", "The INHERE Lookbook", "Timeless moments captured in the heart of Hội An.", "OUTDOOR STORIES · HỘI AN", 1), pageTemplate("lookbook-cta", "Inspired by these stories? Let us capture yours.", "Book Your Experience", "/#footer-booking-form", 2)], defaults: pageTemplate("lookbook-new", "New Lookbook Content"), fields: cmsPageFields,
+  },
+  {
+    table: "faq_prices", sourceTable: "page_content", filterPrefix: "faq-price-", templateGroup: "faq_prices", label: "FAQ Price Table", description: "Edit all Full Package rows, bilingual names, prices and order.", titleKey: "title_en", order: "sort_order", templates: faqPriceTemplates, defaults: pageTemplate("faq-price-new", "New Package", "0 VND", "", 99), fields: cmsPageFields,
+  },
+  {
+    table: "shared_details", sourceTable: "page_content", filterPrefix: "shared-detail-", templateGroup: "shared_details", label: "Shared Photoshoot Details", description: "Details shown under every Full Package on the FAQ page.", titleKey: "title_en", order: "sort_order", templates: sharedDetailTemplates, defaults: pageTemplate("shared-detail-new", "New detail", "", "", 99), fields: cmsPageFields,
+  },
+  {
+    table: "google_reviews_settings", sourceTable: "page_content", filterPrefix: "google-reviews-", templateGroup: "google_reviews", label: "Google Reviews Settings", description: "Control the heading, profile URL and fallback rating/count. Live API data remains preferred.", titleKey: "title_en", order: "sort_order", templates: [pageTemplate("google-reviews-settings", "Loved by guests from around the world.", "https://share.google/f9N75ZoAa9r6lJhJ1", "5.0|952", 1)], defaults: pageTemplate("google-reviews-new", "Google Reviews"), fields: cmsPageFields,
+  },
+  {
+    table: "footer_settings", sourceTable: "page_content", filterPrefix: "footer-", templateGroup: "footer", label: "Footer & Contact", description: "Manage footer CTA, brand summary, address, phone and social links.", titleKey: "title_en", order: "sort_order",
+    templates: [pageTemplate("footer-cta", "Your Hội An story starts here.", "Book Your Experience", "LET’S CREATE SOMETHING BEAUTIFUL", 1), pageTemplate("footer-brand", "Premium photography, Vietnamese styling and curated cultural experiences in Hội An.", "", "", 2), pageTemplate("footer-contact", "24 Đào Duy Từ, Hội An", "+84 898 199 099", "", 3), pageTemplate("footer-instagram", "Instagram", "", "https://www.instagram.com/inhere.hoian", 4), pageTemplate("footer-facebook", "Facebook", "", "https://www.facebook.com/inhere.hoian", 5), pageTemplate("footer-tiktok", "TikTok", "", "https://www.tiktok.com/@inhere.hoian", 6), pageTemplate("footer-youtube", "YouTube", "", "https://www.youtube.com/", 7)], defaults: pageTemplate("footer-new", "New footer item"), fields: cmsPageFields,
+  },
+  {
+    table: "services_content", sourceTable: "page_content", filterPrefix: "services-", templateGroup: "services_content", label: "Services Page Content", description: "Manage the Services hero, rental, gallery and Instagram content.", titleKey: "title_en", order: "sort_order",
+    templates: [pageTemplate("services-hero", "Services & Pricing", "Premium Full-Combo Packages in Hội An. Everything you need in one seamless experience.", "INHERE · HỘI AN", 1), pageTemplate("services-rental", "Outfit Rental Only", "200,000 – 300,000 VND", "Choose an Áo Dài or historical outfit with matching accessories.", 2), pageTemplate("services-gallery", "Captured in Hội An", "Real guests, outdoor locations and natural light.", "THE LOOK", 3), pageTemplate("services-instagram", "See more stories on Instagram", "Visit Instagram", "https://www.instagram.com/inhere.hoian", 4)], defaults: pageTemplate("services-new", "New services content"), fields: cmsPageFields,
   },
   {
     table: "services",
@@ -163,14 +380,19 @@ const sections: Section[] = [
       },
       { key: "image_url", label: "Main image", type: "image" },
       { key: "price_label", label: "Price/package label" },
+      {
+        key: "inclusions",
+        label: "Package inclusions — one item per line",
+        type: "list",
+      },
       { key: "sort_order", label: "Order", type: "number" },
       { key: "is_published", label: "Published", type: "boolean" },
     ],
   },
   {
     table: "albums",
-    label: "Albums",
-    description: "Album covers, categories and descriptions.",
+    label: "Albums / Lookbook",
+    description: "Album covers and Lookbook categories. Use the exact English portfolio filter category names.",
     titleKey: "title_en",
     order: "sort_order",
     defaults: {
@@ -469,7 +691,38 @@ export default function AdminPanel() {
   }, []);
   const loadRows = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from(active).select("*");
+    const templateGroup = section.templateGroup || (
+      active === "faq_content"
+        ? "faq"
+        : active === "services"
+          ? "services"
+          : active === "blog_posts"
+            ? "blog"
+            : null
+    );
+    let deletedTemplateKeys: string[] = [];
+    if (templateGroup) {
+      const { data: deletionSetting } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "deleted_content_templates")
+        .maybeSingle();
+      const deletionMap = (deletionSetting?.value || {}) as Record<
+        string,
+        string[]
+      >;
+      deletedTemplateKeys = Array.isArray(deletionMap[templateGroup])
+        ? deletionMap[templateGroup]
+        : [];
+    }
+    const sourceTable = section.sourceTable || active;
+    let query = supabase.from(sourceTable).select("*");
+    if (section.filterPrefix) query = query.like("page_key", `${section.filterPrefix}%`);
+    if (active === "faq_content") query = query.like("page_key", "faq-%");
+    if (active === "page_content") query = query
+      .not("page_key", "like", "faq-%").not("page_key", "like", "lookbook-%")
+      .not("page_key", "like", "shared-detail-%").not("page_key", "like", "google-reviews-%")
+      .not("page_key", "like", "footer-%").not("page_key", "like", "services-%");
     if (section.order)
       query = query.order(section.order, {
         ascending: section.order !== "created_at",
@@ -478,13 +731,70 @@ export default function AdminPanel() {
     setLoading(false);
     if (error) setMessage(error.message);
     else {
-      const records = (data || []) as Row[];
+      let records = (data || []) as Row[];
       if (active === "blog_posts") {
         const slugs = new Set(records.map((row) => row.slug));
-        setRows([...records, ...seoDraftTemplates.filter((row) => !slugs.has(row.slug))]);
+        setRows([
+          ...records,
+          ...seoDraftTemplates.filter(
+            (row) =>
+              !slugs.has(row.slug) &&
+              !deletedTemplateKeys.includes(String(row.slug)),
+          ),
+        ]);
+      } else if (active === "services") {
+        const slugs = new Set(records.map((row) => row.slug));
+        setRows([
+          ...records,
+          ...packageTemplates.filter(
+            (row) =>
+              !slugs.has(row.slug) &&
+              !deletedTemplateKeys.includes(String(row.slug)),
+          ),
+        ]);
+      } else if (section.templates) {
+        const keys = new Set(records.map((row) => row.page_key));
+        const missing = section.templates.filter((row) => !keys.has(row.page_key) && !deletedTemplateKeys.includes(String(row.page_key)));
+        if (missing.length) {
+          const seedRows = missing.map(({ __template: _template, ...row }) => row);
+          const { error: seedError } = await supabase.from(sourceTable).insert(seedRows);
+          if (!seedError) {
+            let refreshedQuery = supabase.from(sourceTable).select("*");
+            if (section.filterPrefix) refreshedQuery = refreshedQuery.like("page_key", `${section.filterPrefix}%`);
+            const { data: refreshed } = await refreshedQuery.order(section.order || "sort_order");
+            records = (refreshed || []) as Row[];
+          }
+        }
+        setRows(records);
+      } else if (active === "faq_content") {
+        const keys = new Set(records.map((row) => row.page_key));
+        const missing = faqTemplates.filter(
+          (row) =>
+            !keys.has(row.page_key) &&
+            !deletedTemplateKeys.includes(String(row.page_key)),
+        );
+        if (missing.length) {
+          const seedRows = missing.map((row) => {
+            const clean = { ...row };
+            delete clean.__template;
+            return clean;
+          });
+          const { error: seedError } = await supabase
+            .from("page_content")
+            .insert(seedRows);
+          if (!seedError) {
+            const { data: refreshed } = await supabase
+              .from("page_content")
+              .select("*")
+              .like("page_key", "faq-%")
+              .order("sort_order");
+            records = (refreshed || []) as Row[];
+          }
+        }
+        setRows(records);
       } else setRows(records);
     }
-  }, [active, section.order]);
+  }, [active, section.order, section.filterPrefix, section.sourceTable, section.templateGroup, section.templates]);
   useEffect(() => {
     if (!isAdmin) return;
     void loadRows();
@@ -519,9 +829,10 @@ export default function AdminPanel() {
       !payload.published_at
     )
       payload.published_at = new Date().toISOString();
+    const sourceTable = section.sourceTable || active;
     const result = editing.id
-      ? await supabase.from(active).update(payload).eq("id", editing.id)
-      : await supabase.from(active).insert(payload);
+      ? await supabase.from(sourceTable).update(payload).eq("id", editing.id)
+      : await supabase.from(sourceTable).insert(payload);
     setLoading(false);
     if (result.error) setMessage(result.error.message);
     else {
@@ -531,10 +842,68 @@ export default function AdminPanel() {
     }
   };
   const remove = async (row: Row) => {
-    if (!row.id || !window.confirm("Delete this item permanently?")) return;
-    const { error } = await supabase.from(active).delete().eq("id", row.id);
-    if (error) setMessage(error.message);
-    else await loadRows();
+    if (!window.confirm("Delete this item permanently?")) return;
+    const templateGroup = section.templateGroup || (
+      active === "faq_content"
+        ? "faq"
+        : active === "services"
+          ? "services"
+          : active === "blog_posts"
+            ? "blog"
+            : null
+    );
+    const templateKey = String(row.page_key || row.slug || "");
+    if (templateGroup && templateKey) {
+      const { data: deletionSetting } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "deleted_content_templates")
+        .maybeSingle();
+      const deletionMap = (deletionSetting?.value || {}) as Record<
+        string,
+        string[]
+      >;
+      const currentKeys = Array.isArray(deletionMap[templateGroup])
+        ? deletionMap[templateGroup]
+        : [];
+      const { error: settingError } = await supabase
+        .from("site_settings")
+        .upsert(
+          {
+            key: "deleted_content_templates",
+            value: {
+              ...deletionMap,
+              [templateGroup]: Array.from(
+                new Set([...currentKeys, templateKey]),
+              ),
+            },
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "key" },
+        );
+      if (settingError) {
+        setMessage(`Could not delete: ${settingError.message}`);
+        return;
+      }
+    }
+    if (!row.id) {
+      setMessage("Deleted successfully.");
+      await loadRows();
+      return;
+    }
+    const sourceTable = section.sourceTable || active;
+    const { data: deletedRows, error } = await supabase
+      .from(sourceTable)
+      .delete()
+      .eq("id", row.id)
+      .select("id");
+    if (error) setMessage(`Could not delete: ${error.message}`);
+    else if (!deletedRows?.length)
+      setMessage("Could not delete this item. Please refresh and try again.");
+    else {
+      setMessage("Deleted successfully.");
+      await loadRows();
+    }
   };
   const upload = async (file: File, field: string) => {
     setLoading(true);
@@ -846,18 +1215,34 @@ export default function AdminPanel() {
               {section.fields.map((field) => (
                 <label
                   className={
-                    field.type === "textarea" || field.type === "video"
+                    field.type === "textarea" ||
+                    field.type === "video" ||
+                    field.type === "list"
                       ? "wide"
                       : ""
                   }
                   key={field.key}
                 >
                   {field.label}
-                  {field.type === "textarea" ? (
+                  {field.type === "textarea" || field.type === "list" ? (
                     <textarea
-                      value={String(editing[field.key] ?? "")}
+                      value={
+                        field.type === "list" &&
+                        Array.isArray(editing[field.key])
+                          ? (editing[field.key] as unknown[]).join("\n")
+                          : String(editing[field.key] ?? "")
+                      }
                       onChange={(e) =>
-                        setEditing({ ...editing, [field.key]: e.target.value })
+                        setEditing({
+                          ...editing,
+                          [field.key]:
+                            field.type === "list"
+                              ? e.target.value
+                                  .split("\n")
+                                  .map((item) => item.trim())
+                                  .filter(Boolean)
+                              : e.target.value,
+                        })
                       }
                       required={field.required}
                     />

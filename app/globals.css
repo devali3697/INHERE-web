@@ -2857,8 +2857,33 @@ footer {
   color: #716a64;
 }
 .google-review-fallback {
-  flex-direction: column;
-  text-align: center;
+  min-height: 430px;
+  padding: clamp(20px, 3vw, 42px);
+  display: grid;
+  grid-template-columns: minmax(250px, 0.55fr) minmax(420px, 1.45fr);
+  gap: clamp(24px, 4vw, 64px);
+  text-align: left;
+}
+.google-review-fallback > div {
+  align-self: center;
+}
+.google-review-fallback h3 {
+  margin: 14px 0 16px;
+  font: 400 clamp(34px, 3.4vw, 54px) / 1 var(--serif);
+  color: var(--black);
+}
+.google-review-fallback > div > p:last-child {
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.google-review-fallback iframe {
+  width: 100%;
+  min-height: 350px;
+  height: 100%;
+  border: 1px solid rgba(17, 16, 15, 0.12);
+  background: #fff;
 }
 .google-attribution {
   margin: 22px 0 0;
@@ -2983,7 +3008,11 @@ footer {
     min-height: 290px;
   }
   .google-review-fallback {
-    padding: 35px 20px;
+    grid-template-columns: 1fr;
+    padding: 28px 20px 20px;
+  }
+  .google-review-fallback iframe {
+    min-height: 380px;
   }
   .reels-title h2 {
     font-size: 42px;
