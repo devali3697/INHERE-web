@@ -1135,8 +1135,6 @@ function GoogleReviews() {
   const settings = pages["google-reviews-settings"];
   const [data, setData] = useState<GoogleReviewData | null>(null);
   const [failed, setFailed] = useState(false);
-  const [activeReview, setActiveReview] = useState(0);
-  const [reviewsPaused, setReviewsPaused] = useState(false);
   useEffect(() => {
     let active = true;
     void fetch("/api/google-reviews")
@@ -1151,18 +1149,12 @@ function GoogleReviews() {
     };
   }, []);
   const reviewTotal = data?.reviews.length || 0;
-  useEffect(() => {
-    if (reviewTotal < 2 || reviewsPaused) return;
-    const timer = window.setInterval(() => {
-      setActiveReview((current) => (current + 1) % reviewTotal);
-    }, 4800);
-    return () => window.clearInterval(timer);
-  }, [reviewTotal, reviewsPaused]);
-  useEffect(() => {
-    if (activeReview >= reviewTotal && reviewTotal > 0) setActiveReview(0);
-  }, [activeReview, reviewTotal]);
   const [fallbackRating, fallbackCount] = (settings?.body_en || "5.0|952").split("|");
   const profile = data?.googleMapsUri || settings?.subtitle_en || "https://share.google/f9N75ZoAa9r6lJhJ1";
+  const totalReviewCount = data?.reviewCount || Number(fallbackCount) || 900;
+  const reviewCountLabel = totalReviewCount >= 900
+    ? `${Math.floor(totalReviewCount / 100) * 100}+`
+    : totalReviewCount.toLocaleString();
   return (
     <section
       className="google-reviews section"
@@ -1191,10 +1183,10 @@ function GoogleReviews() {
               ★★★★★
             </span>
             <small>
-              {data ? `${data.reviewCount} Google reviews` : `${fallbackCount} Google reviews`}
+              {reviewCountLabel} verified Google reviews
             </small>
           </div>
-          <b>View profile ↗</b>
+          <b>View all reviews ↗</b>
         </a>
       </div>
       {!data && !failed ? (
@@ -1204,23 +1196,18 @@ function GoogleReviews() {
       ) : data?.reviews.length ? (
         <div
           className="google-review-carousel"
-          onMouseEnter={() => setReviewsPaused(true)}
-          onMouseLeave={() => setReviewsPaused(false)}
-          onFocusCapture={() => setReviewsPaused(true)}
-          onBlurCapture={() => setReviewsPaused(false)}
           aria-roledescription="carousel"
-          aria-label="Google guest reviews"
+          aria-label={`${reviewCountLabel} Google reviews; featured reviews scrolling continuously`}
         >
           <div className="google-review-viewport">
-            <div
-              className="google-review-track"
-              style={{ "--review-index": activeReview } as React.CSSProperties}
-            >
+            <div className="google-review-track">
+          {[0, 1].map((copy) => (
+            <div className="google-review-set" key={copy} aria-hidden={copy === 1 ? "true" : undefined}>
           {data.reviews.map((review, index) => (
             <article
               className="google-review-card"
-              key={review.id}
-              aria-label={`Review ${index + 1} of ${reviewTotal}`}
+              key={`${review.id}-${copy}`}
+              aria-label={copy === 0 ? `Featured Google review ${index + 1} of ${reviewTotal}` : undefined}
             >
               <div className="google-review-author">
                 {review.avatar ? (
@@ -1255,40 +1242,15 @@ function GoogleReviews() {
             </article>
           ))}
             </div>
-          </div>
-          {reviewTotal > 1 && (
-            <div className="google-review-controls">
-              <div className="google-review-arrows">
-                <button
-                  type="button"
-                  onClick={() => setActiveReview((activeReview - 1 + reviewTotal) % reviewTotal)}
-                  aria-label="Previous review"
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveReview((activeReview + 1) % reviewTotal)}
-                  aria-label="Next review"
-                >
-                  →
-                </button>
-              </div>
-              <div className="google-review-dots" aria-label="Choose review">
-                {data.reviews.map((review, index) => (
-                  <button
-                    type="button"
-                    key={review.id}
-                    className={index === activeReview ? "is-active" : ""}
-                    onClick={() => setActiveReview(index)}
-                    aria-label={`Show review ${index + 1}`}
-                    aria-current={index === activeReview ? "true" : undefined}
-                  />
-                ))}
-              </div>
-              <span>{String(activeReview + 1).padStart(2, "0")} / {String(reviewTotal).padStart(2, "0")}</span>
+          ))}
             </div>
-          )}
+          </div>
+          <div className="google-review-marquee-meta">
+            <span><i /> Live from Google</span>
+            <a href={profile} target="_blank" rel="noreferrer">
+              Explore all {reviewCountLabel} reviews <b>↗</b>
+            </a>
+          </div>
         </div>
       ) : (
         <div className="google-review-fallback">
