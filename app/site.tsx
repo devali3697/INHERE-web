@@ -26,6 +26,35 @@ import { SiKakaotalk, SiLine, SiWechat } from "react-icons/si";
 
 type Language = "en" | "vi";
 
+type BookingRecord = {
+  customer_name: string;
+  phone: string;
+  preferred_date: string | null;
+  service_name: string;
+  guest_count: number;
+  notes: string;
+};
+
+async function notifyBookingByEmail(booking: BookingRecord, source: string) {
+  try {
+    await fetch("/api/booking-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerName: booking.customer_name,
+        contact: booking.phone,
+        preferredDate: booking.preferred_date,
+        serviceName: booking.service_name,
+        guestCount: booking.guest_count,
+        notes: booking.notes,
+        source,
+      }),
+    });
+  } catch (error) {
+    console.error("Booking saved, but email notification failed", error);
+  }
+}
+
 const copy = {
   en: {
     nav: [
@@ -1422,6 +1451,7 @@ function Booking({
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
+  const submitLock = useRef(false);
   useEffect(() => {
     if (open) {
       setStep(1);
@@ -1432,27 +1462,34 @@ function Booking({
   if (!open) return null;
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (step !== 3) return;
+    if (step !== 3 || submitLock.current) return;
+    submitLock.current = true;
     setSubmitting(true);
     setResultMessage("");
     const selectedPackage = pricingPackages.find((pkg) => pkg.title === service);
     const packageContext = selectedPackage
       ? `Selected package price: ${selectedPackage.price}. Package inclusion: ${selectedPackage.short}; ${selectedPackage.makeup}.`
       : "Submitted through the guided booking form.";
-    const { error } = await supabase.from("booking_requests").insert({
+    const booking = {
       customer_name: name.trim(),
       phone: contact.trim(),
       preferred_date: date || null,
       service_name: service,
       guest_count: Number(people) || 1,
       notes: `${packageContext} Customer notes: ${notes.trim() || "None."}`,
-    });
-    setSubmitting(false);
-    if (error) {
-      setResultMessage("We couldn't send your request. Please contact us on WhatsApp.");
-      return;
+    };
+    try {
+      const { error } = await supabase.from("booking_requests").insert(booking);
+      if (error) {
+        setResultMessage("We couldn't send your request. Please contact us on WhatsApp.");
+        return;
+      }
+      await notifyBookingByEmail(booking, "Guided booking form");
+      setResultMessage("Thank you — your booking request has been received.");
+    } finally {
+      submitLock.current = false;
+      setSubmitting(false);
     }
-    setResultMessage("Thank you — your booking request has been received.");
   };
   const bookingChoices = Array.from(
     new Set([
@@ -1598,7 +1635,9 @@ function Booking({
               </button>
             ) : (
               <button key="send" type="submit" disabled={submitting || Boolean(resultMessage && resultMessage.startsWith("Thank"))}>
-                {submitting ? "Sending…" : "Send Booking Request"} <Arrow />
+                {submitting && <span className="booking-spinner" aria-hidden="true" />}
+                <span>{submitting ? "Sending your request…" : "Send Booking Request"}</span>
+                {!submitting && <Arrow />}
               </button>
             )}
           </div>
@@ -1621,31 +1660,40 @@ function Footer({ onBook }: { onBook: () => void }) {
   const [service, setService] = useState("Rental Ao Dai");
   const [submitting, setSubmitting] = useState(false);
   const [bookingMessage, setBookingMessage] = useState("");
+  const submitLock = useRef(false);
 
   const submitBooking = async (event: FormEvent) => {
     event.preventDefault();
+    if (submitLock.current) return;
+    submitLock.current = true;
     setSubmitting(true);
     setBookingMessage("");
-    const { error } = await supabase.from("booking_requests").insert({
+    const booking = {
       customer_name: name.trim(),
       phone: contact.trim(),
       preferred_date: date,
       service_name: service,
       guest_count: 1,
       notes: "Submitted from the footer booking form",
-    });
-    setSubmitting(false);
-    if (error) {
-      setBookingMessage(
-        "We couldn't send your request. Please contact us on WhatsApp.",
-      );
-      return;
+    };
+    try {
+      const { error } = await supabase.from("booking_requests").insert(booking);
+      if (error) {
+        setBookingMessage(
+          "We couldn't send your request. Please contact us on WhatsApp.",
+        );
+        return;
+      }
+      await notifyBookingByEmail(booking, "Footer booking form");
+      setName("");
+      setContact("");
+      setDate("");
+      setService("Rental Ao Dai");
+      setBookingMessage("Thank you — your booking request has been received.");
+    } finally {
+      submitLock.current = false;
+      setSubmitting(false);
     }
-    setName("");
-    setContact("");
-    setDate("");
-    setService("Rental Ao Dai");
-    setBookingMessage("Thank you — your booking request has been received.");
   };
 
   return (
@@ -1811,7 +1859,9 @@ function Footer({ onBook }: { onBook: () => void }) {
               </select>
             </label>
             <button type="submit" disabled={submitting}>
-              {submitting ? "Sending…" : "Send Booking Request"} <Arrow />
+              {submitting && <span className="booking-spinner" aria-hidden="true" />}
+              <span>{submitting ? "Sending your request…" : "Send Booking Request"}</span>
+              {!submitting && <Arrow />}
             </button>
             {bookingMessage && (
               <p className="footer-form-message" role="status">
@@ -2312,31 +2362,40 @@ function OutfitRentalPage() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const submitLock = useRef(false);
 
   const submitRental = async (event: FormEvent) => {
     event.preventDefault();
+    if (submitLock.current) return;
+    submitLock.current = true;
     setSubmitting(true);
     setMessage("");
-    const { error } = await supabase.from("booking_requests").insert({
+    const booking = {
       customer_name: name.trim(),
       phone: contact.trim(),
       preferred_date: date,
       service_name: "Outfit Rental Only",
       guest_count: people,
       notes: `Preferred outfit: ${outfit}. ${notes.trim() || "No additional notes."}`,
-    });
-    setSubmitting(false);
-    if (error) {
-      setMessage("We couldn't send your request. Please contact us on WhatsApp.");
-      return;
+    };
+    try {
+      const { error } = await supabase.from("booking_requests").insert(booking);
+      if (error) {
+        setMessage("We couldn't send your request. Please contact us on WhatsApp.");
+        return;
+      }
+      await notifyBookingByEmail(booking, "Outfit rental page");
+      setName("");
+      setContact("");
+      setDate("");
+      setPeople(1);
+      setOutfit("Áo Dài");
+      setNotes("");
+      setMessage("Thank you — your outfit rental request has been received.");
+    } finally {
+      submitLock.current = false;
+      setSubmitting(false);
     }
-    setName("");
-    setContact("");
-    setDate("");
-    setPeople(1);
-    setOutfit("Áo Dài");
-    setNotes("");
-    setMessage("Thank you — your outfit rental request has been received.");
   };
 
   return (
@@ -2382,7 +2441,11 @@ function OutfitRentalPage() {
           <div><label>Expected Date<input type="date" value={date} onChange={(e) => setDate(e.target.value)} required /></label><label>Number of Guests<input type="number" min="1" max="20" value={people} onChange={(e) => setPeople(Number(e.target.value))} required /></label></div>
           <label>Preferred Outfit<select value={outfit} onChange={(e) => setOutfit(e.target.value)}><option>Áo Dài</option><option>Cổ phục</option><option>Help me choose</option></select></label>
           <label>Notes <small>(optional)</small><textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Sizes, colors, collection time or any special request" rows={3} /></label>
-          <button type="submit" disabled={submitting}>{submitting ? "Sending Request…" : "Send Rental Request"} <Arrow /></button>
+          <button type="submit" disabled={submitting}>
+            {submitting && <span className="booking-spinner" aria-hidden="true" />}
+            <span>{submitting ? "Sending your request…" : "Send Rental Request"}</span>
+            {!submitting && <Arrow />}
+          </button>
           {message && <p className="rental-form-message" role="status">{message}</p>}
         </form>
       </section>
