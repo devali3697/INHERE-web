@@ -1135,6 +1135,8 @@ function GoogleReviews() {
   const settings = pages["google-reviews-settings"];
   const [data, setData] = useState<GoogleReviewData | null>(null);
   const [failed, setFailed] = useState(false);
+  const [activeReview, setActiveReview] = useState(0);
+  const [reviewsPaused, setReviewsPaused] = useState(false);
   useEffect(() => {
     let active = true;
     void fetch("/api/google-reviews")
@@ -1148,6 +1150,17 @@ function GoogleReviews() {
       active = false;
     };
   }, []);
+  const reviewTotal = data?.reviews.length || 0;
+  useEffect(() => {
+    if (reviewTotal < 2 || reviewsPaused) return;
+    const timer = window.setInterval(() => {
+      setActiveReview((current) => (current + 1) % reviewTotal);
+    }, 4800);
+    return () => window.clearInterval(timer);
+  }, [reviewTotal, reviewsPaused]);
+  useEffect(() => {
+    if (activeReview >= reviewTotal && reviewTotal > 0) setActiveReview(0);
+  }, [activeReview, reviewTotal]);
   const [fallbackRating, fallbackCount] = (settings?.body_en || "5.0|952").split("|");
   const profile = data?.googleMapsUri || settings?.subtitle_en || "https://share.google/f9N75ZoAa9r6lJhJ1";
   return (
@@ -1189,9 +1202,26 @@ function GoogleReviews() {
           Loading live Google reviews…
         </div>
       ) : data?.reviews.length ? (
-        <div className="google-review-grid">
-          {data.reviews.map((review) => (
-            <article className="google-review-card" key={review.id}>
+        <div
+          className="google-review-carousel"
+          onMouseEnter={() => setReviewsPaused(true)}
+          onMouseLeave={() => setReviewsPaused(false)}
+          onFocusCapture={() => setReviewsPaused(true)}
+          onBlurCapture={() => setReviewsPaused(false)}
+          aria-roledescription="carousel"
+          aria-label="Google guest reviews"
+        >
+          <div className="google-review-viewport">
+            <div
+              className="google-review-track"
+              style={{ "--review-index": activeReview } as React.CSSProperties}
+            >
+          {data.reviews.map((review, index) => (
+            <article
+              className="google-review-card"
+              key={review.id}
+              aria-label={`Review ${index + 1} of ${reviewTotal}`}
+            >
               <div className="google-review-author">
                 {review.avatar ? (
                   <img
@@ -1224,6 +1254,41 @@ function GoogleReviews() {
               </a>
             </article>
           ))}
+            </div>
+          </div>
+          {reviewTotal > 1 && (
+            <div className="google-review-controls">
+              <div className="google-review-arrows">
+                <button
+                  type="button"
+                  onClick={() => setActiveReview((activeReview - 1 + reviewTotal) % reviewTotal)}
+                  aria-label="Previous review"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveReview((activeReview + 1) % reviewTotal)}
+                  aria-label="Next review"
+                >
+                  →
+                </button>
+              </div>
+              <div className="google-review-dots" aria-label="Choose review">
+                {data.reviews.map((review, index) => (
+                  <button
+                    type="button"
+                    key={review.id}
+                    className={index === activeReview ? "is-active" : ""}
+                    onClick={() => setActiveReview(index)}
+                    aria-label={`Show review ${index + 1}`}
+                    aria-current={index === activeReview ? "true" : undefined}
+                  />
+                ))}
+              </div>
+              <span>{String(activeReview + 1).padStart(2, "0")} / {String(reviewTotal).padStart(2, "0")}</span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="google-review-fallback">
@@ -1653,7 +1718,18 @@ function Footer({ onBook }: { onBook: () => void }) {
   const footerCta = pages["footer-cta"];
   const footerBrand = pages["footer-brand"];
   const footerContact = pages["footer-contact"];
-  const social = (key: string, fallback: string) => pages[`footer-${key}`]?.body_en || fallback;
+  const legacySocialLinks: Record<string, string[]> = {
+    instagram: ["https://www.instagram.com/inhere.hoian"],
+    facebook: ["https://www.facebook.com/inhere.hoian"],
+    tiktok: ["https://www.tiktok.com/@inhere.hoian"],
+    youtube: ["https://www.youtube.com/"],
+  };
+  const social = (key: string, fallback: string) => {
+    const configured = pages[`footer-${key}`]?.body_en?.trim();
+    return !configured || legacySocialLinks[key]?.includes(configured)
+      ? fallback
+      : configured;
+  };
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [date, setDate] = useState("");
@@ -2235,6 +2311,11 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
   const servicesHero = pages["services-hero"];
   const rentalContent = pages["services-rental"];
   const instagramContent = pages["services-instagram"];
+  const instagramLink =
+    !instagramContent?.body_en ||
+    instagramContent.body_en === "https://www.instagram.com/inhere.hoian"
+      ? IG
+      : instagramContent.body_en;
   const [filter, setFilter] = useState("All");
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
   const cmsGallery = albums.map((album, index) => {
@@ -2345,7 +2426,7 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
         </div>
         <div className="instagram-gallery-cta">
           <p>Want to see more of our daily Hội An stories and behind-the-scenes?</p>
-          <a href={instagramContent?.body_en || "https://www.instagram.com/inhere.studiohoian/"} target="_blank" rel="noreferrer"><FaInstagram /> {instagramContent?.title_en || "Explore more on Instagram @inhere_trangphuchoian"}</a>
+          <a href={instagramLink} target="_blank" rel="noreferrer"><FaInstagram /> {instagramContent?.title_en || "Explore more on Instagram @inhere.studiohoian"}</a>
         </div>
       </section>
       {lightbox && <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Album photo"><button onClick={() => setLightbox(null)} aria-label="Close image">Close ×</button><img src={lightbox.src} alt={lightbox.alt} onClick={() => setLightbox(null)} /></div>}
