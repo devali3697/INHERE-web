@@ -58,13 +58,10 @@ async function notifyBookingByEmail(booking: BookingRecord, source: string) {
 const copy = {
   en: {
     nav: [
-      "Home",
       "Services & Pricing",
       "Hội An Experiences",
       "Portfolio",
-      "Blog",
       "FAQ & Policies",
-      "About",
       "Contact",
     ],
     book: "Book your experience",
@@ -92,13 +89,10 @@ const copy = {
   },
   vi: {
     nav: [
-      "Trang chủ",
       "Dịch vụ & Bảng giá",
       "Trải nghiệm Hội An",
       "Bộ sưu tập",
-      "Bài viết",
       "FAQ & Chính sách",
-      "Về INHERE",
       "Liên hệ",
     ],
     book: "Đặt lịch trải nghiệm",
@@ -133,21 +127,30 @@ const TIKTOK = "https://www.tiktok.com/@inhere.studiohoian/";
 const YOUTUBE = "https://www.youtube.com/@Inhere.studioHoiAn";
 const logo = "/inhere-facebook-avatar.jpg";
 
+const suppliedAlbumCovers = {
+  solo: "https://drive.google.com/thumbnail?id=12MmVlt8E_gDpo1SSdLi-e3fu_7n0iQfy&sz=w2000",
+  couple: "https://drive.google.com/thumbnail?id=1MWFoK_0A5awtc42Uwz4SoxCADRh-leLE&sz=w2000",
+  family: "https://drive.google.com/thumbnail?id=1VLGXa_SDh-xscLWZKgmC4CcJDt1W1lEN&sz=w2000",
+  group: "https://drive.google.com/thumbnail?id=1tkXMEinso4q9xL3Mt-EfTA97j5hO-4en&sz=w2000",
+};
+
+const drivePhoto = (id: string) => `https://drive.google.com/thumbnail?id=${id}&sz=w1800`;
+const clientAlbumSets = {
+  solo: ["1yRsPxrb7IYFqWF3v7rBqnYBhBI3JkExD","1f29Dm_MZD77N9dYRelw7pvYv8P7z7u9B","1B_cFupHwAvaZobrJ18c2yfmBwip_ge8y","1V0i-KzjRKRrnGV-uxbvDX4fAWzVRotG9","1nbFFjglGXLJ6jG12OQuzVn6k9uNkJDIG","1ZdBJxJkM7_cp8RMxPn2FfkgqhN1cCISV","10yrQvjjE0njy7rnuHDsU0olzsIJ0eYGC","1gshAtbdPe3l7kM4YJSDuWrKC1Zx-fyDL","1axicRlja4yVvDXjzNI55NTAOWTTxrQjQ","1ieREC7K0E2MI2sdiF6dcY5fhpxXsQLPg","1QMuEV5gYL6aZXA6VtCGEzrR0gB_PkTf4","1O5rWMRwGo9AreY7OrBTvN8UyObj2NC9x","1x5Aar_LXbgQKNYz1dggM4m0OCKRg4uT7","1r8RY48suvIsPG4X1aO4waFoGazD0BTA6","164ova8a16Tg09OZCVKMio8BJsqqW-qwE"].map(drivePhoto),
+  couple: ["1noiT3J_eEyJ0oq0eKZkJLIvWRQAymPmP","1TiTTW7cKUJY5fGqA9CfeXTv3Ifsfmsyc","1WlIM1Zux3V-7U1YUoD3u4d_QQkkD_Wxf","1G0gxcMoCRpZfNbz7Xck8sZWwp88RjEbs","1ekp5mx8XKWmb5Wz-VJqYorr5EISDaFx8","1t2pJieBlw_UC-50BGRXofquVTpdBERuO","1WJjiyFTjtaSpeT1tkgvYK8mcUbFG_AMj","1AS0GF68BuQekY7tqv3ba7O_4lOr-yH1Q","1yG3G_TCEqLNAXKVDg1LZaC9ag9OfqvEM","1RCwa_9RQD8ZiGZnGxRdQGNSNpXY0hrIK","1QvhNutAiY9DgZJjgeBCHVti2X1j1YDUs","1MEzi7qj7g5sl9lHhrWWY8CxsBNBnA8FW","1TcB1Y1SS17ax6CSaUZIUrF01dM_bOB3B","1PXOW_Fh1uzxSBnS52Ls_VhJezER056jZ","1Ay8LR5kgK3x8giRnFYaX9XO7ViHDuECF"].map(drivePhoto),
+  family: ["1GG26n8q6gm79eoqi_gQxjqiQ_CSgKwyG","1bfD3EF2te5TvKNy3aeElZZ0Edx06_Nr7","1WeoCwRxxOOY0abIq1sOXi_I0LXfUAS2_","1lCxmnGhTTBO4iIKDejoLrhqprTAs29YC","1npnK0U_gw6lOa_ZhfAjydqrjGbQ9ahTn","1mm_7SC4XAnXmgXu3X0rv-LJqDlRr2QeV","1wVMU5EUq7o1j-lMSw3h01mkfmRTpcQft","1XR_imB-ywdw4pvS4l1UKSmbRRBfp7CEm","1bpSDYBPDaGoecABNCF6lkwRbwfn8Ccbm","17qL7DDcS9Ks89elOpwaJAjheiYDroJyW","15iTo-vxcp7k7QpJn-xFG9xKU0jVWiN0z","1MLo2cWl3LoeSDkPr5WLgKZWdz03jPEK9","1avhUapvjCAP0f9pBh15ypzZpKttV4NHz","1BdxB_S36rM2l4rZojFY78JO0gF3vICM1","1MvIXrZN7PkJd8k9g1brImbHRuJFJAFik"].map(drivePhoto),
+  group: ["1UehLJlP41QZ8jWEKZmB3pSd-40nWXacq","1WEsT2ZUD_4DefbyEevCidRKeQyhJ298p","1uWwrKbvt1FPY1foCyr_cbXb5bCPSeqwR","1tGiRFeJZGDPRWfIhmA6adibIkCmKgeci","1_KI_g1mAWl6tAqOoWsCoaeRfvIksSksC","1iuzdVBr7UVr3-2Ts15XBPeWqBl64U4yB","15A2QvkEveAKik5UBKs2-v7PEJMpUysFt","143Fs6vWN1OiSMohIoIn-VAr--aXvQ7nO","1sPPPBMPxDgMZufDqMTn35RwJfvYt8aOm","1pQgaVEwIkvyFCO4Bz0W1-6U1SsVRI95F","1RV2_wTUfxpqlbYfYpAwDzzXZXBKNakuR","1D54vN-DjtrIylfRftEckUmfzM35OYf_B","1GIKXSyehcI4nURqXwd87xGe45x-uiswI","1efbsdbkhlJAJ9hD035zB24Xv5EA-UvpM","1mHU0sVdmWO5jvXM-4I7eA-IMh85-ftp4"].map(drivePhoto),
+};
+
 const images = {
-  hero: "https://images.unsplash.com/photo-1768017093068-7d0a34d0add0?auto=format&fit=crop&w=2560&q=94",
-  couple:
-    "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=86",
-  solo: "https://images.unsplash.com/photo-1768017093154-1bfbaa3e3ccf?auto=format&fit=crop&w=1600&q=86",
-  family:
-    "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1600&q=86",
-  lantern:
-    "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=86",
-  river:
-    "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=1600&q=86",
-  craft:
-    "https://images.unsplash.com/photo-1509023464722-18d996393ca8?auto=format&fit=crop&w=1600&q=86",
-  oldtown:
-    "https://images.unsplash.com/photo-1780803244219-a21588279fc6?auto=format&fit=crop&w=1600&q=86",
+  hero: suppliedAlbumCovers.couple,
+  couple: suppliedAlbumCovers.couple,
+  solo: suppliedAlbumCovers.solo,
+  family: suppliedAlbumCovers.family,
+  lantern: suppliedAlbumCovers.group,
+  river: suppliedAlbumCovers.couple,
+  craft: suppliedAlbumCovers.group,
+  oldtown: suppliedAlbumCovers.solo,
 };
 
 const services = [
@@ -462,16 +465,7 @@ function Header({
     };
   }, [open]);
   const c = copy[lang];
-  const hrefs = [
-    "/",
-    "/services",
-    "/experiences",
-    "/portfolio",
-    "/blog",
-    "/faq",
-    "/about",
-    "/contact",
-  ];
+  const hrefs = ["/services", "/experiences", "/portfolio", "/faq", "/#footer-booking-form"];
   const links = c.nav.map((title, index) => [title, hrefs[index]]);
   return (
     <>
@@ -480,7 +474,7 @@ function Header({
           INHERE<span>HỘI AN</span>
         </a>
         <nav className="desktop-nav">
-          {links.slice(1).map(([t, h]) => (
+          {links.map(([t, h]) => (
             <a key={t} href={h}>
               {t}
             </a>
@@ -552,22 +546,17 @@ function Header({
 
 function Hero({ lang }: { lang: Language }) {
   const c = copy[lang];
-  const { pages } = useCms();
+  const { pages, albums } = useCms();
   const homePage = pages.home;
   const heroCopy = c.heroCopy;
-  const heroImage = homePage?.hero_image || images.hero;
+  const heroImage = homePage?.hero_image || albums[0]?.image || images.hero;
   return (
     <section className="hero">
       <picture>
-        <source
-          media="(max-width: 700px)"
-          srcSet="https://images.unsplash.com/photo-1768017093068-7d0a34d0add0?auto=format&fit=crop&w=1200&q=92"
-        />
         <img
           src={heroImage}
           alt="Lantern-lit architecture in Hội An"
           fetchPriority="high"
-          data-placeholder-image="Replace with INHERE portfolio hero"
         />
       </picture>
       <div className="hero-shade" />
@@ -656,7 +645,7 @@ function Intro({ lang }: { lang: Language }) {
           <em>{c.introB}</em>
         </h2>
         <p>{c.introCopy}</p>
-        <a href="/about" className="text-link dark">
+        <a href="/experiences" className="text-link dark">
           {c.introLink} <Arrow />
         </a>
       </div>
@@ -665,11 +654,12 @@ function Intro({ lang }: { lang: Language }) {
 }
 
 function FullCombo({ onBook }: { onBook: () => void }) {
+  const image = clientAlbumSets.solo[0];
   return (
     <section id="full-combo" className="full-combo section">
       <div className="full-combo-visual">
         <img
-          src={images.solo}
+          src={image}
           alt="Complete Áo Dài, makeup and photoshoot experience in Hội An"
         />
         <span>THE SIGNATURE EXPERIENCE</span>
@@ -723,31 +713,31 @@ const customerCategories = [
   {
     title: "Solo",
     slug: "solo-photoshoot",
-    image: images.solo,
+    image: suppliedAlbumCovers.solo,
     label: "A portrait experience centred on you",
   },
   {
     title: "Couple",
     slug: "couple-photoshoot",
-    image: images.couple,
+    image: suppliedAlbumCovers.couple,
     label: "A shared story in Hội An",
   },
   {
     title: "Family",
     slug: "family-photoshoot",
-    image: images.family,
+    image: suppliedAlbumCovers.family,
     label: "Natural memories across generations",
   },
   {
     title: "Group",
     slug: "group-photoshoot",
-    image:
-      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=88",
+    image: suppliedAlbumCovers.group,
     label: "Friends, laughter and a day together",
   },
 ];
 
 function CustomerCategories() {
+  const covers: Record<string, string> = { Solo: clientAlbumSets.solo[0], Couple: clientAlbumSets.couple[0], Family: clientAlbumSets.family[0], Group: clientAlbumSets.group[0] };
   return (
     <section className="customer-categories section">
       <div className="category-heading">
@@ -768,7 +758,7 @@ function CustomerCategories() {
             key={category.title}
           >
             <img
-              src={category.image}
+              src={covers[category.title] || category.image}
               alt={`${category.title} photoshoot in Hội An`}
             />
             <div className="category-shade" />
@@ -989,21 +979,21 @@ function Blog() {
     <section className="blog section">
       <div className="section-head">
         <div>
-          <p className="eyebrow">THE INHERE JOURNAL</p>
+          <p className="eyebrow">HỘI AN EXPERIENCES</p>
           <h2>
             Stories and Guides
             <br />
             <em>from Hội An.</em>
           </h2>
         </div>
-        <a className="text-link dark" href="/blog">
+        <a className="text-link dark" href="/experiences">
           Visit the journal <Arrow />
         </a>
       </div>
       <div className="blog-grid">
         {articles.map((x, i) => (
           <a
-            href={`/blog/${x.slug}`}
+            href={`/experiences/${x.slug}`}
             key={x.title}
             className={`post p${i + 1}`}
           >
@@ -1047,7 +1037,7 @@ function JournalIndex() {
   return (
     <main className="journal-index">
       <header className="journal-index-head">
-        <p>THE INHERE JOURNAL · HỘI AN</p>
+        <p>HỘI AN EXPERIENCES · INHERE</p>
         <h1>Travel slowly.<br /><em>See more beautifully.</em></h1>
         <span>Practical local guides, thoughtful photography advice and considered ideas for your time in Hội An.</span>
       </header>
@@ -1058,7 +1048,7 @@ function JournalIndex() {
           <p>FEATURED GUIDE · {lead.cat}</p>
           <h2>{lead.title}</h2>
           <span>{lead.excerpt}</span>
-          <a href={`/blog/${lead.slug}`}>Read the guide <Arrow /></a>
+          <a href={`/experiences/${lead.slug}`}>Read the guide <Arrow /></a>
         </div>
         {articles.length > 1 && <div className="journal-featured-controls">
           <button onClick={() => setFeatured((featured - 1 + articles.length) % articles.length)} aria-label="Previous featured article">←</button>
@@ -1073,7 +1063,7 @@ function JournalIndex() {
           </div>
         </div>
         <div className="journal-article-grid">
-          {visible.map((article) => <a href={`/blog/${article.slug}`} key={article.slug} className="journal-article-card">
+          {visible.map((article) => <a href={`/experiences/${article.slug}`} key={article.slug} className="journal-article-card">
             <div><img src={article.image} alt={article.title} loading="lazy" /><span>{article.cat}</span></div>
             <time>{article.date ? new Date(article.date).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }) : "INHERE Journal"}</time>
             <h2>{article.title}</h2><p>{article.excerpt}</p><b>Read article <Arrow /></b>
@@ -1102,12 +1092,17 @@ function JournalArticle({ article }: { article: CmsArticle }) {
     <div className="journal-reading-layout">
       <article className="journal-reading">
         <nav className="article-toc" aria-label="Table of contents"><p>IN THIS GUIDE</p><h2>Table of Contents</h2><ol>{sections.map((section, index) => <li key={section.id}><a href={`#${section.id}`}><span>{String(index + 1).padStart(2, "0")}</span>{section.heading}</a></li>)}</ol></nav>
-        {sections.map((section, index) => <section id={section.id} key={section.id}><p className="article-section-number">0{index + 1}</p><h2>{section.heading}</h2>{section.body.split("\n").map((text, i) => <p key={i}>{text}</p>)}{index === 0 && <div className="article-promo"><span>THE COMPLETE HỘI AN EXPERIENCE</span><h3>Áo Dài, makeup and a professional photoshoot—planned as one seamless experience.</h3><a href="/services">Explore Full-Combo Packages <Arrow /></a></div>}</section>)}
+        {sections.map((section, index) => <section id={section.id} key={section.id}><p className="article-section-number">0{index + 1}</p><h2>{section.heading}</h2>{section.body.split("\n").filter(Boolean).map((text, i) => {
+          const imageMatch = text.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/);
+          if (imageMatch) return <figure className="article-inline-image" key={`${section.id}-${i}`}><img src={imageMatch[2]} alt={imageMatch[1] || `${article.title} supporting photograph`} loading="lazy" /><figcaption>{imageMatch[1]}</figcaption></figure>;
+          if (/\[INHERE .*BLOCK|\[INHERE PROMO/i.test(text)) return <div className="article-promo" key={`${section.id}-${i}`}><span>INHERE EXPERIENCE</span><h3>{text.replace(/^\[|\]$/g, "")}</h3><a href="/services">View Services &amp; Pricing <Arrow /></a></div>;
+          return <p key={`${section.id}-${i}`}>{text}</p>;
+        })}{index === 0 && <div className="article-promo"><span>THE COMPLETE HỘI AN EXPERIENCE</span><h3>Áo Dài, makeup and a professional photoshoot—planned as one seamless experience.</h3><a href="/services">Explore Full-Combo Packages <Arrow /></a></div>}</section>)}
         <aside className="journal-author"><div>IN</div><span><b>About the INHERE Team</b><p>Local photographers and stylists sharing practical Hội An knowledge, Vietnamese aesthetics and thoughtful ways to preserve your journey.</p></span></aside>
       </article>
       <aside className="journal-sticky-promo"><img src={images.solo} alt="Full-Combo Áo Dài and photoshoot" /><p>INHERE SIGNATURE</p><h2>Full-Combo Áo Dài &amp; Photoshoot</h2><span>3 hours · outfit · makeup · photoshoot · edited photographs</span><a href="/services">View Pricing &amp; Book <Arrow /></a></aside>
     </div>
-    <section className="journal-related"><p>CONTINUE READING</p><h2>Related travel stories</h2><div>{related.map((item) => <a href={`/blog/${item.slug}`} key={item.slug}><img src={item.image} alt={item.title} loading="lazy" /><span>{item.cat}</span><h3>{item.title}</h3></a>)}</div></section>
+    <section className="journal-related"><p>CONTINUE READING</p><h2>Related travel stories</h2><div>{related.map((item) => <a href={`/experiences/${item.slug}`} key={item.slug}><img src={item.image} alt={item.title} loading="lazy" /><span>{item.cat}</span><h3>{item.title}</h3></a>)}</div></section>
   </main>;
 }
 
@@ -1256,7 +1251,7 @@ function GoogleReviews() {
         <div className="google-review-fallback">
           <div>
             <p className="eyebrow">GOOGLE MAPS · LIVE PROFILE</p>
-            <h3>Read our guest reviews here.</h3>
+            <h3>Read our authentic guest reviews.</h3>
             <p>
               Open the review count inside the Google panel to browse verified
               guest experiences without leaving this page.
@@ -1282,38 +1277,30 @@ const studioReels = [
   {
     title: "Silk in motion",
     category: "Áo Dài Portrait",
-    video:
-      "https://videos.pexels.com/video-files/3015510/3015510-hd_1080_1920_24fps.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1576487248805-cf45f6bcc67f?auto=format&fit=crop&w=900&q=88",
-    instagramUrl: "https://www.instagram.com/",
+    video: "",
+    poster: clientAlbumSets.solo[2],
+    instagramUrl: IG,
   },
   {
     title: "Old Town light",
     category: "Golden Hour",
-    video:
-      "https://videos.pexels.com/video-files/4763824/4763824-hd_1080_1920_24fps.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=900&q=88",
-    instagramUrl: "https://www.instagram.com/",
+    video: "",
+    poster: clientAlbumSets.family[1],
+    instagramUrl: IG,
   },
   {
     title: "A quiet love story",
     category: "Couple Session",
-    video:
-      "https://videos.pexels.com/video-files/4065218/4065218-hd_1080_1920_25fps.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=900&q=88",
-    instagramUrl: "https://www.instagram.com/",
+    video: "",
+    poster: clientAlbumSets.couple[2],
+    instagramUrl: IG,
   },
   {
     title: "Lantern evenings",
     category: "Hội An After Dark",
-    video:
-      "https://videos.pexels.com/video-files/3571264/3571264-hd_1080_1920_30fps.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=900&q=88",
-    instagramUrl: "https://www.instagram.com/",
+    video: "",
+    poster: clientAlbumSets.group[2],
+    instagramUrl: IG,
   },
 ];
 
@@ -1329,6 +1316,18 @@ function ReelCard({
   const instagramCode = reel.instagramUrl.match(
     /instagram\.com\/(?:reel|p|tv)\/([^/?#]+)/i,
   )?.[1];
+  const editorialTitles = [
+    "Inside the INHERE wardrobe",
+    "Love beneath the lanterns",
+    "A graceful Hội An morning",
+    "Family memories in the Ancient Town",
+  ];
+  const displayTitle = /^(?:reel\s*)?\d+$/i.test(reel.title.trim())
+    ? editorialTitles[index % editorialTitles.length]
+    : reel.title;
+  const displayCategory = /^(?:reel\s*)?\d+$/i.test(reel.category.trim())
+    ? "Hội An Stories"
+    : reel.category;
   const play = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -1378,7 +1377,7 @@ function ReelCard({
           <iframe
             className="instagram-reel-embed"
             src={`https://www.instagram.com/reel/${instagramCode}/embed/`}
-            title={reel.title}
+            title={displayTitle}
             loading="lazy"
             scrolling="no"
             allow="autoplay; encrypted-media; picture-in-picture"
@@ -1391,8 +1390,8 @@ function ReelCard({
         <div className="reel-instagram-meta">
           <div>
             <span>{String(index + 1).padStart(2, "0")}</span>
-            <p>{reel.category}</p>
-            <h3>{reel.title}</h3>
+            <p>{displayCategory}</p>
+            <h3>{displayTitle}</h3>
           </div>
           <a href={reel.instagramUrl} target="_blank" rel="noreferrer">
             Open Reel ↗
@@ -1434,10 +1433,6 @@ function Reels() {
               <br />
               <em>beyond the photograph.</em>
             </h2>
-          </div>
-          <div>
-            Explore recent stories from our studio. Use the Instagram play
-            control inside each frame, or open the original Reel in one tap.
           </div>
         </div>
         <div className="reels-track">
@@ -1737,6 +1732,8 @@ function Footer({ onBook }: { onBook: () => void }) {
   return (
     <footer>
       <div className="footer-cta">
+        <img className="footer-cta-bg" src={clientAlbumSets.family[0]} alt="Wide view of Hội An beside the Hoài River" loading="lazy" />
+        <div className="footer-cta-shade" aria-hidden="true" />
         <div className="footer-orbit" aria-hidden="true">
           ✦
         </div>
@@ -2048,42 +2045,19 @@ const pricingPackages = [
 ];
 
 const galleryFallback = [
-  { src: images.solo, category: "Solo", alt: "Solo portrait in Hội An" },
-  { src: `${images.oldtown}&crop=faces`, category: "Solo", alt: "Áo Dài portrait in the Ancient Town" },
-  { src: `${images.lantern}&crop=faces`, category: "Solo", alt: "Hội An lantern portrait" },
-  { src: `${images.solo}&sat=-10`, category: "Solo", alt: "Editorial solo portrait" },
-  { src: `${images.oldtown}&fit=crop&crop=top`, category: "Solo", alt: "Traditional styling in Hội An" },
-  { src: `${images.river}&fit=crop&crop=top`, category: "Solo", alt: "Riverside solo portrait" },
-  { src: images.couple, category: "Couple", alt: "Couple photography in Hội An" },
-  { src: `${images.river}&crop=faces`, category: "Couple", alt: "Couple story by the Hội An riverside" },
-  { src: `${images.hero}&crop=faces`, category: "Couple", alt: "Couple experience in the Ancient Town" },
-  { src: `${images.couple}&sat=-8`, category: "Couple", alt: "Romantic Hội An couple session" },
-  { src: `${images.hero}&fit=crop&crop=top`, category: "Couple", alt: "Couple walk through Hội An" },
-  { src: `${images.lantern}&fit=crop&crop=center`, category: "Couple", alt: "Lantern-lit couple photographs" },
-  { src: images.family, category: "Family & Group", alt: "Family photoshoot in Hội An" },
-  { src: `${images.craft}&crop=faces`, category: "Family & Group", alt: "Friend group cultural portrait" },
-  { src: `${images.family}&crop=entropy`, category: "Family & Group", alt: "Group photographs in Hội An" },
-  { src: `${images.family}&sat=-10`, category: "Family & Group", alt: "Relaxed family portraits" },
-  { src: `${images.craft}&fit=crop&crop=top`, category: "Family & Group", alt: "Friends sharing a Hội An experience" },
-  { src: `${images.oldtown}&fit=crop&crop=center`, category: "Family & Group", alt: "Family in the Ancient Town" },
+  ...clientAlbumSets.solo.slice(0, 9).map((src, index) => ({ src, category: "Solo", alt: `Solo Áo Dài album in Hội An · ${index + 1}` })),
+  ...clientAlbumSets.couple.slice(0, 9).map((src, index) => ({ src, category: "Couple", alt: `Couple album in Hội An · ${index + 1}` })),
+  ...[...clientAlbumSets.family.slice(0, 5), ...clientAlbumSets.group.slice(0, 4)].map((src, index) => ({ src, category: "Family & Group", alt: `Family and friend group album in Hội An · ${index + 1}` })),
 ];
 
 const lookbookFallback = [
-  { src: images.oldtown, category: "Classic Áo Dài", alt: "Classic Áo Dài portrait in Hội An Ancient Town" },
-  { src: `${images.solo}&crop=faces`, category: "Classic Áo Dài", alt: "Traditional Áo Dài outdoors in Hội An" },
-  { src: `${images.craft}&crop=faces`, category: "Historical Costumes", alt: "Vietnamese historical costume portrait" },
-  { src: `${images.oldtown}&crop=top`, category: "Historical Costumes", alt: "Cổ Phục styling in the Ancient Town" },
-  { src: `${images.river}&sat=-8`, category: "Morning Serenity", alt: "Quiet early morning portrait by the Hội An river" },
-  { src: `${images.solo}&sat=-12`, category: "Morning Serenity", alt: "Soft morning portrait in Hội An" },
-  { src: images.lantern, category: "Lantern Night Vibe", alt: "Lantern night photography in Hội An" },
-  { src: `${images.lantern}&crop=faces`, category: "Lantern Night Vibe", alt: "Portrait beneath Hội An lanterns" },
-  { src: `${images.river}&crop=top`, category: "Golden Hour & Rooftops", alt: "Golden hour portrait over Hội An rooftops" },
-  { src: `${images.hero}&sat=-5`, category: "Golden Hour & Rooftops", alt: "Warm rooftop photography in Hội An" },
-  { src: images.solo, category: "The Solo Muse", alt: "Solo muse portrait in Hội An" },
-  { src: `${images.oldtown}&crop=faces`, category: "The Solo Muse", alt: "Outdoor solo portrait beside bougainvillea streets" },
-  { src: images.couple, category: "Couples & Romance", alt: "Romantic couple photography in Hội An" },
-  { src: `${images.hero}&crop=faces`, category: "Couples & Romance", alt: "Couple walking through Hội An Ancient Town" },
-  { src: `${images.river}&crop=faces`, category: "Couples & Romance", alt: "Riverside couple portrait at golden hour" },
+  ...clientAlbumSets.solo.slice(0, 4).map((src, i) => ({ src, category: "Classic Áo Dài", alt: `Classic Áo Dài portrait in Hội An · ${i + 1}` })),
+  ...clientAlbumSets.group.slice(0, 3).map((src, i) => ({ src, category: "Historical Costumes", alt: `Vietnamese styling in the Ancient Town · ${i + 1}` })),
+  ...clientAlbumSets.solo.slice(4, 7).map((src, i) => ({ src, category: "Morning Serenity", alt: `Morning portrait in Hội An · ${i + 1}` })),
+  ...clientAlbumSets.group.slice(3, 6).map((src, i) => ({ src, category: "Lantern Night Vibe", alt: `Hội An evening portrait · ${i + 1}` })),
+  ...clientAlbumSets.family.slice(0, 3).map((src, i) => ({ src, category: "Golden Hour & Rooftops", alt: `Golden hour by the Hoài River · ${i + 1}` })),
+  ...clientAlbumSets.solo.slice(7, 12).map((src, i) => ({ src, category: "The Solo Muse", alt: `The Solo Muse in Hội An · ${i + 1}` })),
+  ...clientAlbumSets.couple.slice(0, 6).map((src, i) => ({ src, category: "Couples & Romance", alt: `Couples and romance in Hội An · ${i + 1}` })),
 ];
 
 function LookbookPage() {
@@ -2101,8 +2075,10 @@ function LookbookPage() {
     ["Couples & Romance", "Ảnh Cặp đôi"],
   ];
   const [filter, setFilter] = useState("All");
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const cmsImages = albums.map((album, index) => {
+  const [activeCoverIndex, setActiveCoverIndex] = useState<number | null>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const lightboxTouchX = useRef<number | null>(null);
+  const cmsImages = albums.filter((album) => !/unsplash|pexels/i.test(album.image)).map((album, index) => {
     const exactCategory = categories.find(([en]) => en === album.meta)?.[0];
     const meta = `${album.meta} ${album.title}`.toLowerCase();
     const category = exactCategory || (meta.includes("couple") || meta.includes("love")
@@ -2119,16 +2095,34 @@ function LookbookPage() {
   const allImages = [...cmsImages, ...lookbookFallback.map((item, index) => ({ ...item, key: `fallback-${index}` }))]
     .filter((item, index, all) => all.findIndex((candidate) => candidate.src === item.src) === index);
   const visible = filter === "All" ? allImages : allImages.filter((item) => item.category === filter);
-  const active = activeIndex === null ? null : visible[activeIndex];
+  const activeCover = activeCoverIndex === null ? null : visible[activeCoverIndex];
+  const albumPhotosByCategory: Record<string, string[]> = {
+    "Classic Áo Dài": clientAlbumSets.solo,
+    "Historical Costumes": clientAlbumSets.group,
+    "Morning Serenity": clientAlbumSets.solo,
+    "Lantern Night Vibe": clientAlbumSets.group,
+    "Golden Hour & Rooftops": clientAlbumSets.family,
+    "The Solo Muse": clientAlbumSets.solo,
+    "Couples & Romance": clientAlbumSets.couple,
+  };
+  const activeAlbum = activeCover
+    ? (albumPhotosByCategory[activeCover.category] || [activeCover.src]).map((src, index) => ({
+        src,
+        category: activeCover.category,
+        alt: `${activeCover.category} outdoor album photograph ${index + 1} in Hội An`,
+        key: `album-${activeCover.category}-${index}`,
+      }))
+    : [];
+  const active = activeAlbum[activeSlide] || null;
   const move = useCallback((direction: number) => {
-    setActiveIndex((current) => current === null || !visible.length ? current : (current + direction + visible.length) % visible.length);
-  }, [visible.length, setActiveIndex]);
+    setActiveSlide((current) => activeAlbum.length ? (current + direction + activeAlbum.length) % activeAlbum.length : current);
+  }, [activeAlbum.length]);
 
   useEffect(() => {
     if (!active) return;
     document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setActiveIndex(null);
+      if (event.key === "Escape") setActiveCoverIndex(null);
       if (event.key === "ArrowLeft") move(-1);
       if (event.key === "ArrowRight") move(1);
     };
@@ -2148,21 +2142,21 @@ function LookbookPage() {
     <section className="lookbook-gallery-section" id="lookbook-gallery">
       <header><p>ANCIENT TOWN · NATURAL LIGHT · REAL MOMENTS</p><h2>Photographed entirely<br /><em>outdoors in Hội An.</em></h2></header>
       <nav className="lookbook-filters" aria-label="Filter portfolio">
-        {categories.map(([en, vi]) => <button key={en} className={filter === en ? "active" : ""} onClick={() => { setFilter(en); setActiveIndex(null); }}><b>{en}</b><span>{vi}</span></button>)}
+        {categories.map(([en, vi]) => <button key={en} className={filter === en ? "active" : ""} onClick={() => { setFilter(en); setActiveCoverIndex(null); setActiveSlide(0); }}><b>{en}</b><span>{vi}</span></button>)}
       </nav>
       <div className="lookbook-grid">
-        {visible.map((item, index) => <button key={item.key} onClick={() => setActiveIndex(index)} aria-label={`Open ${item.alt}`}>
+        {visible.map((item, index) => <button key={item.key} onClick={() => { setActiveCoverIndex(index); setActiveSlide(0); }} aria-label={`Open complete ${item.category} album: ${item.alt}`}>
           <img src={item.src} alt={item.alt} loading="lazy" />
-          <span><b>{String(index + 1).padStart(2, "0")}</b>{item.category}</span>
+          <span><b>{String(index + 1).padStart(2, "0")}</b>{item.category} · View album</span>
         </button>)}
       </div>
       {!visible.length && <p className="lookbook-empty">More outdoor stories for this collection are coming soon.</p>}
     </section>
     <section className="lookbook-cta"><p>YOUR HỘI AN STORY</p><h2>{cta?.title_en || "Inspired by these stories? Let us capture yours."}</h2><a href={cta?.body_en || "/#footer-booking-form"}>{cta?.subtitle_en || "Book Your Experience"} <Arrow /></a></section>
-    {active && <div className="lookbook-lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer">
-      <button className="lookbook-close" onClick={() => setActiveIndex(null)} aria-label="Close lightbox">Close ×</button>
+    {active && activeCover && <div className="lookbook-lightbox" role="dialog" aria-modal="true" aria-label={`${activeCover.category} full album`} onTouchStart={(event) => { lightboxTouchX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={(event) => { if (lightboxTouchX.current === null) return; const delta = event.changedTouches[0].clientX - lightboxTouchX.current; if (Math.abs(delta) > 45) move(delta > 0 ? -1 : 1); lightboxTouchX.current = null; }}>
+      <button className="lookbook-close" onClick={() => setActiveCoverIndex(null)} aria-label="Close lightbox">Close ×</button>
       <button className="lookbook-prev" onClick={() => move(-1)} aria-label="Previous image">←</button>
-      <figure><img src={active.src} alt={active.alt} /><figcaption><span>{active.category}</span><b>{String((activeIndex || 0) + 1).padStart(2, "0")} / {String(visible.length).padStart(2, "0")}</b></figcaption></figure>
+      <figure><img src={active.src} alt={active.alt} /><figcaption><span>{activeCover.category} · Full album</span><b>{String(activeSlide + 1).padStart(2, "0")} / {String(activeAlbum.length).padStart(2, "0")}</b></figcaption></figure>
       <button className="lookbook-next" onClick={() => move(1)} aria-label="Next image">→</button>
     </div>}
   </main>;
@@ -2211,59 +2205,35 @@ const fullPackagePrices = [
 ];
 
 const packageDetails = [
-  { number: "01", name: "Solo Package", price: "1,800,000 VND", intro: "Full package for 1 person", items: ["Photoshoot for 1 person", "1 makeup and hairstyling session for a female guest", "1 outfit of your choice", "All accessories: heels, conical hat, handbag, headpiece, earrings, necklace, shawl, transparent umbrella and wooden fan"] },
-  { number: "02", name: "Couple Package", price: "2,700,000 VND", intro: "Full package for 2 persons", items: ["Photoshoot for 2 persons", "1 makeup and hairstyling session for a female guest", "2 outfits of your choice — 1 per person", "All accessories included for both guests"] },
-  { number: "03", name: "Family Package", price: "From 3,500,000 VND", intro: "Price varies with the exact number of family members", items: ["Photoshoot for the whole family", "Makeup and hairstyling for the mother/adult females based on the selected package", "Outfits of your choice for all family members", "All accessories included"] },
-  { number: "04", name: "Friend Group Package", price: "From 2,900,000 VND", intro: "For 2 or more persons; price varies by group size", items: ["Photoshoot for the whole group", "Makeup and hairstyling for all female group members", "Outfits of your choice for every group member", "All accessories included"] },
+  { number: "01", slug: "solo-photoshoot", name: "Solo Package", price: "1,800,000 VND", intro: "Full package for 1 person", items: ["Photoshoot for 1 person", "1 makeup and hairstyling session for a female guest", "1 outfit of your choice", "All accessories: heels, conical hat, handbag, headpiece, earrings, necklace, shawl, transparent umbrella and wooden fan"] },
+  { number: "02", slug: "couple-photoshoot", name: "Couple Package", price: "2,700,000 VND", intro: "Full package for 2 persons", items: ["Photoshoot for 2 persons", "1 makeup and hairstyling session for a female guest", "2 outfits of your choice — 1 per person", "All accessories included for both guests"] },
+  { number: "03", slug: "family-photoshoot", name: "Family Package", price: "From 3,500,000 VND", intro: "Price varies with the exact number of family members", items: ["Photoshoot for the whole family", "Makeup and hairstyling for the mother/adult females based on the selected package", "Outfits of your choice for all family members", "All accessories included"] },
+  { number: "04", slug: "group-photoshoot", name: "Friend Group Package", price: "From 2,900,000 VND", intro: "For 2 or more persons; price varies by group size", items: ["Photoshoot for the whole group", "Makeup and hairstyling for all female group members", "Outfits of your choice for every group member", "All accessories included"] },
+];
+
+const sharedPackageDetails = [
+  ["Iconic Hội An locations", "The photoshoot lasts approximately 1.5 hours and covers many of Hội An’s most iconic locations, including the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys, and other beautiful spots throughout the Ancient Town."],
+  ["Optional rooftop café", "If you would like photos at a rooftop café with a panoramic view of Hội An, we can also include this location. You only need to purchase a drink to access the café and take photos there."],
+  ["Beautiful stops along the way", "Along the way, if we discover any beautiful spots, we can stop and take additional photos."],
+  ["Local guidance", "Our photographer is a local resident of Hội An and knows the most photogenic locations. They will guide you throughout the session and help you with posing to ensure beautiful results."],
+  ["Unlimited photographs", "There is no limit on the number of photos taken. We will send all original photos to you via a Google Drive link on the same day. After reviewing them, you will receive 15 to 40 professionally edited photos."],
+  ["A flexible pace", "Depending on the number of visitors at each location, we are happy to extend the shooting time if needed to ensure you can visit multiple spots and leave fully satisfied with your experience."],
+  ["Everything included", "The package price already includes the outfit, makeup, hairstyling, and photoshoot. You are free to choose any outfit you like from our collection, with no restrictions."],
 ];
 
 function FaqPoliciesPage() {
-  const { pages, services: cmsServices } = useCms();
-  const managedFaqs = Object.values(pages)
-    .filter((page) => page.page_key.startsWith("faq-"))
-    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  const faqNotes: Record<string, string> = {
-    "Booking & Weather": "Planning your outdoor experience",
-    "Photos & Edits": "Delivery, selection and timing",
-    "Outfits & Makeup": "Rental flexibility and care",
-  };
-  const visibleFaqGroups = managedFaqs.length
-    ? Array.from(new Set(managedFaqs.map((item) => item.title_en))).map(
-        (title) => ({
-          title,
-          note: faqNotes[title] || "Helpful information",
-          items: managedFaqs
-            .filter((item) => item.title_en === title)
-            .map((item) => [item.subtitle_en, item.body_en]),
-        }),
-      )
-    : faqGroups;
-  const managedPrices = Object.values(pages).filter((page) => page.page_key.startsWith("faq-price-")).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  const visiblePrices = managedPrices.length ? managedPrices.map((item, index) => [String(index + 1), item.title_en, item.title_vi, item.subtitle_en]) : fullPackagePrices;
-  const managedPackages = packageDetails.map((fallback) => {
-    const match = cmsServices.find((item) => item.slug.startsWith("full-combo-") && item.title === fallback.name);
-    return match ? { ...fallback, price: match.priceLabel || fallback.price, intro: match.copy || fallback.intro, items: match.inclusions?.length ? match.inclusions : fallback.items } : fallback;
-  });
-  const managedShared = Object.values(pages).filter((page) => page.page_key.startsWith("shared-detail-")).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   return <main className="faq-page">
     <section className="faq-hero"><img src={images.oldtown} alt="Outdoor INHERE photography experience in Hội An" /><div /><p>BEFORE YOUR EXPERIENCE · INHERE</p><h1>Frequently Asked <em>Questions</em></h1><span>Everything you need to know before your Hội An experience with INHERE.</span><a href="#faq-questions">Find your answer <span>↓</span></a></section>
     <section className="faq-intro" id="faq-questions"><div><p>QUICK ANSWERS</p><h2>Plan with confidence.<br /><em>Arrive ready to enjoy.</em></h2></div><p>Our experiences take place outdoors across Hội An’s Ancient Town. These answers explain weather planning, delivery times, outfits, makeup and how each package works.</p></section>
     <section className="faq-accordions">
-      {visibleFaqGroups.map((group, groupIndex) => <article key={group.title} className="faq-group"><header><span>0{groupIndex + 1}</span><div><p>{group.note}</p><h2>{group.title}</h2></div></header><div>{group.items.map(([question, answer], index) => <details key={question} open={groupIndex === 0 && index === 0}><summary><span>{question}</span><i aria-hidden="true">+</i></summary><p>{answer}</p></details>)}</div></article>)}
+      {faqGroups.map((group, groupIndex) => <article key={group.title} className="faq-group"><header><span>0{groupIndex + 1}</span><div><p>{group.note}</p><h2>{group.title}</h2></div></header><div>{group.items.map(([question, answer], index) => <details key={question} open={groupIndex === 0 && index === 0}><summary><span>{question}</span><i aria-hidden="true">+</i></summary><p>{answer}</p></details>)}</div></article>)}
     </section>
     <section className="faq-price-section"><header><p>FULL PACKAGE PRICE · BẢNG GIÁ TRỌN GÓI</p><h2>Clear pricing for<br /><em>every kind of story.</em></h2></header>
-      <div className="faq-price-table-wrap"><table className="faq-price-table"><thead><tr><th>No.<small>STT</small></th><th>Full Package Services<small>Dịch vụ trọn gói</small></th><th>Price<small>Giá</small></th></tr></thead><tbody>{visiblePrices.map(([number, name, vi, price]) => <tr key={number}><td>{number}</td><td><strong>{name}</strong><span>{vi}</span></td><td>{price}</td></tr>)}</tbody></table></div>
-      <div className="faq-mobile-prices">{visiblePrices.map(([number, name, vi, price]) => <article key={number}><span>{number}</span><div><h3>{name}</h3><p>{vi}</p><b>{price}</b></div></article>)}</div>
+      <div className="faq-price-table-wrap"><table className="faq-price-table"><thead><tr><th>No.<small>STT</small></th><th>Full Package Services<small>Dịch vụ trọn gói</small></th><th>Price<small>Giá</small></th></tr></thead><tbody>{fullPackagePrices.map(([number, name, vi, price]) => <tr key={number}><td>{number}</td><td><strong>{name}</strong><span>{vi}</span></td><td>{price}</td></tr>)}</tbody></table></div>
+      <div className="faq-mobile-prices">{fullPackagePrices.map(([number, name, vi, price]) => <article key={number}><span>{number}</span><div><h3>{name}</h3><p>{vi}</p><b>{price}</b></div></article>)}</div>
     </section>
-    <section className="faq-package-details"><header><p>WHAT EACH PACKAGE INCLUDES</p><h2>Choose the experience<br /><em>that fits your group.</em></h2></header><div>{managedPackages.map((pkg) => <article key={pkg.name}><span>{pkg.number}</span><p>{pkg.intro}</p><h3>{pkg.name}</h3><strong>{pkg.price}</strong><ul>{pkg.items.map((item) => <li key={item}>{item}</li>)}</ul><a href={`/services?package=${encodeURIComponent(pkg.name)}`}>View &amp; Book Package <Arrow /></a></article>)}</div></section>
-    <section className="faq-shared-details"><div><p>APPLIES TO EVERY FULL PACKAGE</p><h2>Your outdoor photoshoot,<br /><em>from start to finish.</em></h2></div>{managedShared.length ? <ol>{managedShared.map((item, index) => <li key={item.page_key}><span>{String(index + 1).padStart(2, "0")}</span><p><b>{item.title_en}</b>{item.body_en}</p></li>)}</ol> : <ol>
-      <li><span>01</span><p><b>Iconic Hội An locations</b>The approximately 1.5-hour shoot may cover the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys and other beautiful Ancient Town spots.</p></li>
-      <li><span>02</span><p><b>Optional rooftop café</b>A panoramic rooftop café can be included. You only need to purchase a drink for access and photography there.</p></li>
-      <li><span>03</span><p><b>Local guidance</b>Our Hội An photographer knows the most photogenic routes and will guide your posing throughout the session.</p></li>
-      <li><span>04</span><p><b>Unlimited photographs</b>There is no limit on photos taken. All originals arrive through Google Drive the same day, followed by 15–40 edited selections.</p></li>
-      <li><span>05</span><p><b>A flexible pace</b>If crowds slow the route, we are happy to extend shooting time when needed so you can visit multiple spots comfortably.</p></li>
-      <li><span>06</span><p><b>Everything included</b>Your package already includes outfit, makeup, hairstyling and photoshoot. Choose any available outfit from our collection without restriction.</p></li>
-    </ol>}</section>
+    <section className="faq-package-details"><header><p>WHAT EACH PACKAGE INCLUDES</p><h2>Choose the experience<br /><em>that fits your group.</em></h2></header><div>{packageDetails.map((pkg) => <article key={pkg.name}><span>{pkg.number}</span><p>{pkg.intro}</p><h3>{pkg.name}</h3><strong>{pkg.price}</strong><ul>{pkg.items.map((item) => <li key={item}>{item}</li>)}</ul><a href={`/services/${pkg.slug}`}>View &amp; Book Package <Arrow /></a></article>)}</div></section>
+    <section className="faq-shared-details"><div><p>APPLIES TO EVERY FULL PACKAGE</p><h2>Your outdoor photoshoot,<br /><em>from start to finish.</em></h2></div><ol>{sharedPackageDetails.map(([title, body], index) => <li key={title}><span>{String(index + 1).padStart(2, "0")}</span><p><b>{title}</b>{body}</p></li>)}</ol></section>
     <section className="faq-bottom-cta"><p>READY TO PLAN YOUR DAY?</p><h2>Choose your package.<br /><em>We’ll shape the rest.</em></h2><div><a href="/services">Explore Packages <Arrow /></a><a href="/#footer-booking-form">Book Your Experience <Arrow /></a></div></section>
   </main>;
 }
@@ -2279,8 +2249,13 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
       ? IG
       : instagramContent.body_en;
   const [filter, setFilter] = useState("All");
-  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
-  const cmsGallery = albums.map((album, index) => {
+  const [lightbox, setLightbox] = useState<{
+    title: string;
+    slides: { src: string; alt: string }[];
+    active: number;
+  } | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const cmsGallery = albums.filter((album) => !/unsplash|pexels/i.test(album.image)).map((album, index) => {
     const meta = album.meta.toLowerCase();
     const category = meta.includes("couple")
       ? "Couple"
@@ -2292,13 +2267,11 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
   const gallery = [...cmsGallery, ...galleryFallback]
     .filter((item, index, all) => all.findIndex((x) => x.src === item.src) === index);
   const visible = filter === "All" ? gallery.slice(0, 9) : gallery.filter((item) => item.category === filter).slice(0, 9);
-  const shared = [
-    "3 hours total experience",
-    "1.5 hours outfit selection & makeup",
-    "1.5 hours photoshoot in the Ancient Town",
-    "1 Áo Dài outfit per person",
-    "Unlimited studio accessories",
-    "All raw photos + 15–40 edited photos",
+  const sharedFor = (packageTitle: string) => [
+    "3 hours total experience (1.5 hours for outfit selection & makeup + 1.5 hours photoshoot in the Ancient Town)",
+    "Choose any 1 Áo Dài outfit from our collection (1 outfit per person)",
+    "Unlimited access to all available accessories in the studio",
+    `All raw photos + ${packageTitle === "Solo Package" ? "25" : "30"} professionally edited photos`,
   ];
   const editablePackages = pricingPackages.map((fallback) => {
     const managed = cmsServices.find(
@@ -2306,23 +2279,54 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
         service.slug.startsWith("full-combo-") &&
         service.title === fallback.title,
     );
-    if (!managed) return { ...fallback, inclusions: shared };
+    if (!managed) return { ...fallback, inclusions: sharedFor(fallback.title) };
     const inclusions = managed.inclusions?.length
       ? managed.inclusions
-      : [fallback.makeup, ...shared];
+      : [fallback.makeup];
     return {
       title: managed.title,
       price: managed.priceLabel || fallback.price,
       short: managed.copy || fallback.short,
       makeup: inclusions[0] || fallback.makeup,
-      inclusions: inclusions.slice(1).length ? inclusions.slice(1) : shared,
+      inclusions: sharedFor(managed.title),
     };
   });
 
+  const usdPrices: Record<string, string> = {
+    "Solo Package": "1,800,000 VND (~$70)",
+    "Couple Package": "2,700,000 VND (~$104)",
+    "Family Package": "Starts from 3,500,000 VND (~$135)",
+    "Friend Group": "Starts from 2,900,000 VND (~$112)",
+  };
+
+  const openAlbum = (cover: (typeof gallery)[number]) => {
+    const source = cover.category === "Solo" ? clientAlbumSets.solo : cover.category === "Couple" ? clientAlbumSets.couple : [...clientAlbumSets.family, ...clientAlbumSets.group].slice(0, 30);
+    const ordered = [cover.src, ...source.filter((src) => src !== cover.src)].slice(0, 30);
+    const slides = ordered.map((src, index) => ({ src, alt: `${cover.alt} — photograph ${index + 1}` }));
+    setLightbox({ title: cover.alt, slides, active: 0 });
+  };
+
+  const moveLightbox = useCallback((direction: number) => {
+    setLightbox((current) => current ? {
+      ...current,
+      active: (current.active + direction + current.slides.length) % current.slides.length,
+    } : null);
+  }, []);
+
   useEffect(() => {
     document.body.style.overflow = lightbox ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [lightbox]);
+    const handleKey = (event: KeyboardEvent) => {
+      if (!lightbox) return;
+      if (event.key === "Escape") setLightbox(null);
+      if (event.key === "ArrowLeft") moveLightbox(-1);
+      if (event.key === "ArrowRight") moveLightbox(1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [lightbox, moveLightbox]);
 
   return (
     <main className="pricing-page">
@@ -2348,7 +2352,7 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
               <strong>{pkg.price}</strong>
               <div className="pricing-primary"><p>{pkg.short}</p><p>{pkg.makeup}</p></div>
               <ul>{pkg.inclusions.map((item) => <li key={item}>{item}</li>)}</ul>
-              <button className="pricing-book-button" onClick={() => onBook(pkg.title)}>Book Now <Arrow /></button>
+              <a className="pricing-book-button" href="#footer-booking-form">Book Now <Arrow /></a>
             </article>
           ))}
         </div>
@@ -2360,22 +2364,21 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
           <table>
             <thead><tr><th>Full Package Services</th>{editablePackages.map((pkg) => <th key={pkg.title}>{pkg.title.replace(" Package", "")}</th>)}</tr></thead>
             <tbody>
-              <tr><th>Price</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.price}</td>)}</tr>
+              <tr><th>Price</th>{editablePackages.map((pkg) => <td key={pkg.title}>{usdPrices[pkg.title] || pkg.price}</td>)}</tr>
               <tr><th>Outfits</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.short}</td>)}</tr>
               <tr><th>Makeup &amp; hair</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.makeup}</td>)}</tr>
               <tr><th>Total duration</th>{editablePackages.map((pkg) => <td key={pkg.title}>3 hours</td>)}</tr>
               <tr><th>Photoshoot</th>{editablePackages.map((pkg) => <td key={pkg.title}>1.5 hours · Ancient Town</td>)}</tr>
               <tr><th>Accessories</th>{editablePackages.map((pkg) => <td key={pkg.title}>Unlimited studio selection</td>)}</tr>
-              <tr><th>Photographs</th>{editablePackages.map((pkg) => <td key={pkg.title}>All raw + 15–40 edited</td>)}</tr>
+              <tr><th>Photographs</th>{editablePackages.map((pkg) => <td key={pkg.title}>All raw + {pkg.title === "Solo Package" ? "25" : "30"} professionally edited</td>)}</tr>
             </tbody>
           </table>
         </div>
       </section>
 
       <section className="rental-banner">
-        <div><p>STANDALONE SERVICE</p><h2>{rentalContent?.title_en || "Outfit Rental Only"}</h2><strong>{rentalContent?.subtitle_en || "200,000 – 300,000 VND"} <small>/ outfit</small></strong></div>
-        <p>1 traditional outfit (Áo Dài/Cổ phục), including basic matching accessories: conical hat, wooden fan, hair flower and fabric tote bag.</p>
-        <a href="/services/outfit-rental">Rent an Outfit <Arrow /></a>
+        <div className="rental-banner-image"><img src={clientAlbumSets.solo[5]} alt="Traditional Áo Dài and Cổ phục outfit rental in Hội An" loading="lazy" /></div>
+        <div className="rental-banner-copy"><p>STANDALONE SERVICE</p><h2>{rentalContent?.title_en || "Outfit Rental Only"}</h2><strong>220,000 – 500,000 VND <small>(~$9 – $20) / outfit</small></strong><p>1 traditional outfit (Áo Dài/Cổ phục), including basic matching accessories: conical hat, wooden fan, hair flower and fabric tote bag.</p><a href="#footer-booking-form">Rent an Outfit <Arrow /></a></div>
       </section>
 
       <section className="portfolio-section">
@@ -2384,14 +2387,19 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
           {["All", "Solo", "Couple", "Family & Group"].map((tab) => <button key={tab} className={filter === tab ? "active" : ""} onClick={() => setFilter(tab)}>{tab}</button>)}
         </div>
         <div className="masonry-gallery">
-          {visible.map((item, index) => <button key={`${item.src}-${index}`} onClick={() => setLightbox(item)} aria-label={`Open ${item.alt}`}><img src={item.src} alt={item.alt} loading="lazy" /></button>)}
+          {visible.map((item, index) => <button key={`${item.src}-${index}`} onClick={() => openAlbum(item)} aria-label={`Open full album: ${item.alt}`}><img src={item.src} alt={item.alt} loading="lazy" /><span>View album</span></button>)}
         </div>
         <div className="instagram-gallery-cta">
           <p>Want to see more of our daily Hội An stories and behind-the-scenes?</p>
-          <a href={instagramLink} target="_blank" rel="noreferrer"><FaInstagram /> {instagramContent?.title_en || "Explore more on Instagram @inhere.studiohoian"}</a>
+          <a href={instagramLink} target="_blank" rel="noreferrer"><FaInstagram /> Explore more on Instagram @inhere_trangphuchoian</a>
         </div>
       </section>
-      {lightbox && <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Album photo"><button onClick={() => setLightbox(null)} aria-label="Close image">Close ×</button><img src={lightbox.src} alt={lightbox.alt} onClick={() => setLightbox(null)} /></div>}
+      {lightbox && <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label={`${lightbox.title} album`} onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={(event) => { if (touchStartX.current === null) return; const delta = event.changedTouches[0].clientX - touchStartX.current; if (Math.abs(delta) > 45) moveLightbox(delta > 0 ? -1 : 1); touchStartX.current = null; }}>
+        <div className="gallery-lightbox-top"><div><small>FULL ALBUM</small><strong>{lightbox.title}</strong></div><button onClick={() => setLightbox(null)} aria-label="Close album">Close ×</button></div>
+        <button className="gallery-lightbox-arrow previous" onClick={() => moveLightbox(-1)} aria-label="Previous photograph">←</button>
+        <figure><img src={lightbox.slides[lightbox.active].src} alt={lightbox.slides[lightbox.active].alt} /><figcaption>{String(lightbox.active + 1).padStart(2, "0")} / {String(lightbox.slides.length).padStart(2, "0")}</figcaption></figure>
+        <button className="gallery-lightbox-arrow next" onClick={() => moveLightbox(1)} aria-label="Next photograph">→</button>
+      </div>}
     </main>
   );
 }
@@ -2556,7 +2564,7 @@ function DestinationShowcase({
       <div className="journal-page-grid">
         {articles.map((article, index) => (
           <a
-            href={`/blog/${article.slug}`}
+            href={`/experiences/${article.slug}`}
             className={`journal-page-card journal-${index + 1}`}
             key={article.slug}
           >
@@ -2703,6 +2711,110 @@ function DestinationShowcase({
   return null;
 }
 
+const packagePageData: Record<string, {
+  title: string;
+  audience: string;
+  price: string;
+  edited: number;
+  cover: string;
+  note?: string;
+}> = {
+  "solo-photoshoot": {
+    title: "Solo Package",
+    audience: "A complete Áo Dài, makeup and photography experience created for one guest.",
+    price: "1,800,000 VND (approx. $70)",
+    edited: 25,
+    cover: suppliedAlbumCovers.solo,
+  },
+  "couple-photoshoot": {
+    title: "Couple Package",
+    audience: "A guided Hội An experience for two, with coordinated outfits and makeup for one female guest.",
+    price: "2,700,000 VND (approx. $104)",
+    edited: 30,
+    cover: suppliedAlbumCovers.couple,
+  },
+  "family-photoshoot": {
+    title: "Family Package",
+    audience: "Basic package for three people, including makeup for Mom.",
+    price: "3,500,000 VND (approx. $135)",
+    edited: 30,
+    cover: suppliedAlbumCovers.family,
+    note: "Surcharges apply for additional family members and extra makeup. Please book in advance if extra makeup is needed.",
+  },
+  "group-photoshoot": {
+    title: "Group Package",
+    audience: "A lively Full Combo photography experience for a group of four people.",
+    price: "Approx. 4,000,000 VND (approx. $155)",
+    edited: 30,
+    cover: suppliedAlbumCovers.group,
+    note: "Surcharges apply for extra people and extra makeup, depending on the number of males and females.",
+  },
+};
+
+const sharedPhotoshootDetails = [
+  "The photoshoot lasts approximately 90 minutes and covers many of Hội An’s most iconic locations, including the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys, and other beautiful spots throughout the Ancient Town.",
+  "If you would like photos at a rooftop café with a panoramic view of Hội An, we can also include this location. You only need to purchase a drink to access the café and take photos there.",
+  "Along the way, if we discover any beautiful spots, we can stop and take additional photos.",
+  "Our photographer is a local resident of Hội An and knows the most photogenic locations. They will guide you throughout the session and help you with posing to ensure beautiful results.",
+  "There is no limit on the number of photos taken. We will send all original photos to you via a Google Drive link on the same day. After reviewing them, you can select {edited} favorite photos for professional editing.",
+  "Depending on the number of visitors at each location, we are happy to extend the shooting time if needed to ensure you can visit multiple spots and leave fully satisfied with your experience.",
+  "The package price already includes the outfit, makeup, hairstyling, and photoshoot. You are free to choose any outfit you like from our collection, with no restrictions.",
+];
+
+function PackageDetailPage({ slug }: { slug: string }) {
+  const details = packagePageData[slug];
+  const [active, setActive] = useState(0);
+  const touchX = useRef<number | null>(null);
+  const category = details.title.replace(" Package", "");
+  const categorySlides = category === "Solo" ? clientAlbumSets.solo : category === "Couple" ? clientAlbumSets.couple : category === "Family" ? clientAlbumSets.family : clientAlbumSets.group;
+  const slides = categorySlides.map((image, index) => ({ image, title: `${details.title} in Hội An · ${index + 1}` }));
+  const move = (direction: number) => setActive((current) => (current + direction + slides.length) % slides.length);
+
+  return (
+    <main className="package-detail-page">
+      <section className="package-detail-hero">
+        <p>INHERE FULL COMBO · HỘI AN</p>
+        <h1>{details.title}</h1>
+        <span>{details.audience}</span>
+      </section>
+      <section className="package-detail-overview" id="package-overview">
+        <div className="package-carousel" aria-roledescription="carousel" aria-label={`${details.title} photographs`} onTouchStart={(event) => { touchX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={(event) => { if (touchX.current === null) return; const delta = event.changedTouches[0].clientX - touchX.current; if (Math.abs(delta) > 45) move(delta > 0 ? -1 : 1); touchX.current = null; }}>
+          <img src={slides[active].image} alt={slides[active].title} />
+          <div className="package-carousel-controls">
+            <button onClick={() => move(-1)} aria-label="Previous package photograph">←</button>
+            <span>{String(active + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}</span>
+            <button onClick={() => move(1)} aria-label="Next package photograph">→</button>
+          </div>
+        </div>
+        <div className="package-detail-copy">
+          <p className="eyebrow">PACKAGE DETAILS</p>
+          <h2>{details.title}</h2>
+          <strong className="package-detail-price">{details.price}</strong>
+          <div className="package-detail-summary">
+            <span><small>Total experience</small><b>3 hours</b></span>
+            <span><small>Original photographs</small><b>All raw photos</b></span>
+            <span><small>Professional edits</small><b>{details.edited} edited photos</b></span>
+          </div>
+          {details.note && <p className="package-surcharge-note">{details.note}</p>}
+          <a className="package-detail-cta" href="#footer-booking-form">Book {category} Package <Arrow /></a>
+        </div>
+      </section>
+      <section className="package-shared-details">
+        <header><p>APPLIES TO THIS PACKAGE</p><h2>Shared Photoshoot Details</h2></header>
+        <ol>{sharedPhotoshootDetails.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item.replace("{edited}", String(details.edited))}</p></li>)}</ol>
+      </section>
+    </main>
+  );
+}
+
+function HomeFinalCta({ onBook }: { onBook: () => void }) {
+  const image = clientAlbumSets.family[0];
+  return <section className="final-quote">
+    <img src={image} alt="A wide Hội An riverside or Ancient Town view" />
+    <div><p className="eyebrow light">MEMORIES, STYLED WITH INTENTION</p><blockquote>“Some places stay with you.<br />Let Hội An be one of them.”</blockquote><button className="button ivory" onClick={onBook}>Begin Your Story <Arrow /></button></div>
+  </section>;
+}
+
 function InnerPage({
   path,
   onBook,
@@ -2731,8 +2843,8 @@ function InnerPage({
   const isLanding = segments.length === 1;
   if (type === "faq" && isLanding) return <FaqPoliciesPage />;
   if (type === "portfolio" && isLanding) return <LookbookPage />;
-  if (type === "blog" && isLanding) return <JournalIndex />;
-  if (type === "blog" && article) return <JournalArticle article={article} />;
+  if ((type === "experiences" || type === "blog") && isLanding) return <JournalIndex />;
+  if ((type === "experiences" || type === "blog") && article) return <JournalArticle article={article} />;
   const profile = pageProfiles[type] || pageProfiles.services;
   const title =
     article?.title ||
@@ -2776,7 +2888,7 @@ function InnerPage({
       </section>
       <section id="discover" className="inner-content">
         <p className="eyebrow">
-          {article ? "THE INHERE JOURNAL" : profile.kicker}
+          {article ? "HỘI AN EXPERIENCES" : profile.kicker}
         </p>
         <h2>
           {article
@@ -3068,6 +3180,17 @@ export default function InhereSite({
   const routePath = path.split("#")[0] || "/";
   const home = routePath === "/";
   useEffect(() => {
+    let destination = "";
+    if (routePath === "/contact") destination = "/#footer-booking-form";
+    if (routePath === "/about") destination = "/experiences";
+    if (routePath === "/blog" || routePath.startsWith("/blog/")) {
+      destination = routePath.replace(/^\/blog/, "/experiences");
+    }
+    if (!destination) return;
+    window.history.replaceState({}, "", destination);
+    setPath(destination);
+  }, [routePath]);
+  useEffect(() => {
     if (!home || !["#full-combo", "#footer-booking-form"].includes(window.location.hash)) return;
     const frame = window.requestAnimationFrame(() => {
       document
@@ -3109,24 +3232,10 @@ export default function InhereSite({
             />
             <CustomerCategories />
             <Reels />
-            <section className="final-quote">
-              <img src={images.river} alt="Hội An at dusk" />
-              <div>
-                <p className="eyebrow light">MEMORIES, STYLED WITH INTENTION</p>
-                <blockquote>
-                  “Some places stay with you.
-                  <br />
-                  Let Hội An be one of them.”
-                </blockquote>
-                <button
-                  className="button ivory"
-                  onClick={() => setBooking(true)}
-                >
-                  Begin Your Story <Arrow />
-                </button>
-              </div>
-            </section>
+            <HomeFinalCta onBook={() => setBooking(true)} />
           </main>
+        ) : packagePageData[routePath.split("/").filter(Boolean).at(-1) || ""] ? (
+          <PackageDetailPage slug={routePath.split("/").filter(Boolean).at(-1) || ""} />
         ) : routePath === "/services/outfit-rental" || routePath === "/rentals/outfits" ? (
           <OutfitRentalPage />
         ) : routePath === "/services" || routePath === "/rentals" || routePath === "/albums" ? (
@@ -3144,15 +3253,6 @@ export default function InhereSite({
           />
         )}
         <Footer onBook={() => setBooking(true)} />
-        <button
-          className="plan-fab"
-          aria-label="Open your saved Hội An plan"
-          onClick={() => setShowPlan(true)}
-        >
-          <b>View My Plan</b>
-          <small>Saved experiences</small>
-          <span>{plan.length}</span>
-        </button>
         <div className={`plan-panel ${showPlan ? "open" : ""}`}>
           <button className="plan-close" onClick={() => setShowPlan(false)}>
             Close ×

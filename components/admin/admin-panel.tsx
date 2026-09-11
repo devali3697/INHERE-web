@@ -12,6 +12,7 @@ type Field = {
   type?:
     | "text"
     | "textarea"
+    | "article"
     | "number"
     | "boolean"
     | "select"
@@ -95,7 +96,7 @@ const packageTemplates: Row[] = [
       "1.5 hours outfit selection & makeup",
       "1.5 hours photoshoot in the Ancient Town",
       "Unlimited studio accessories",
-      "All raw photos + 15–40 edited photos",
+      "All raw photos + 25 edited photos",
     ],
     image_url: "",
     is_published: true,
@@ -115,7 +116,7 @@ const packageTemplates: Row[] = [
       "1.5 hours outfit selection & makeup",
       "1.5 hours photoshoot in the Ancient Town",
       "Unlimited studio accessories",
-      "All raw photos + 15–40 edited photos",
+      "All raw photos + 30 edited photos",
     ],
     image_url: "",
     is_published: true,
@@ -135,7 +136,7 @@ const packageTemplates: Row[] = [
       "1.5 hours photoshoot in the Ancient Town",
       "Outfits for all family members",
       "Unlimited studio accessories",
-      "All raw photos + 15–40 edited photos",
+      "All raw photos + 30 edited photos",
     ],
     image_url: "",
     is_published: true,
@@ -155,7 +156,7 @@ const packageTemplates: Row[] = [
       "1.5 hours photoshoot in the Ancient Town",
       "Outfits for every group member",
       "Unlimited studio accessories",
-      "All raw photos + 15–40 edited photos",
+      "All raw photos + 30 edited photos",
     ],
     image_url: "",
     is_published: true,
@@ -235,7 +236,13 @@ const faqPriceTemplates: Row[] = [
   ["1-Person Package", "Gói 1 người", "1,800,000 VND"], ["Couple Package", "Gói couple / Cặp đôi", "2,700,000 VND"], ["2-Person Package (2 Females)", "Gói 2 người – 2 nữ", "2,900,000 VND"], ["3-Person Package (3 Females)", "Gói 3 người – 3 nữ", "3,900,000 VND"], ["4-Person Package (4 Females)", "Gói 4 người – 4 nữ", "4,600,000 VND"], ["5-Person Package (5 Females)", "Gói 5 người – 5 nữ", "5,250,000 VND"], ["6-Person Package (6 Females)", "Gói 6 người – 6 nữ", "6,000,000 VND"], ["Family: 3 Persons / 1 Young Child", "Gói gđ 3 người / 1 bé nhỏ", "3,500,000 VND"], ["Family: 4 Persons / 2 Young Children", "Gói gđ 4 người / 2 bé nhỏ", "4,000,000 VND"], ["Family: 5 Persons / 3 Young Children", "Gói gđ 5 người / 3 bé nhỏ", "4,500,000 VND"], ["Family: 6 Persons / 4 Young Children", "Gói gđ 6 người / 4 bé nhỏ", "5,000,000 VND"],
 ].map(([en, vi, price], index) => ({ ...pageTemplate(`faq-price-${String(index + 1).padStart(2, "0")}`, en, price, "", index + 1), title_vi: vi }));
 const sharedDetailTemplates = [
-  ["Iconic Hội An locations", "The approximately 1.5-hour shoot may cover the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys and other beautiful Ancient Town spots."], ["Optional rooftop café", "A panoramic rooftop café can be included. You only need to purchase a drink for access and photography there."], ["Local guidance", "Our Hội An photographer knows the most photogenic routes and will guide your posing throughout the session."], ["Unlimited photographs", "There is no limit on photos taken. All originals arrive through Google Drive the same day, followed by 15–40 edited selections."], ["A flexible pace", "If crowds slow the route, we are happy to extend shooting time when needed so you can visit multiple spots comfortably."], ["Everything included", "Your package already includes outfit, makeup, hairstyling and photoshoot. Choose any available outfit from our collection without restriction."],
+  ["Iconic Hội An locations", "The photoshoot lasts approximately 1.5 hours and covers the Japanese Bridge, bougainvillea streets, lantern streets, yellow-wall alleys and other beautiful Ancient Town spots."],
+  ["Optional rooftop café", "A panoramic rooftop café can be included. You only need to purchase a drink for access and photography there."],
+  ["Beautiful stops along the way", "Along the way, if we discover any beautiful spots, we can stop and take additional photos."],
+  ["Local guidance", "Our local Hội An photographer knows the most photogenic routes and will guide your posing throughout the session."],
+  ["Unlimited photographs", "There is no limit on photos taken. All originals arrive through Google Drive the same day, followed by the edited selections included in the chosen package."],
+  ["A flexible pace", "If crowds slow the route, we are happy to extend shooting time when needed so you can visit multiple spots comfortably."],
+  ["Everything included", "Your package already includes outfit, makeup, hairstyling and photoshoot. Choose any available outfit from our collection without restriction."],
 ].map(([title, body], index) => pageTemplate(`shared-detail-${String(index + 1).padStart(2, "0")}`, title, "", body, index + 1));
 const cmsPageFields: Field[] = [
   { key: "page_key", label: "Unique key", required: true }, { key: "title_en", label: "Heading / label", required: true }, { key: "title_vi", label: "Vietnamese / secondary label" }, { key: "subtitle_en", label: "Subtitle / value" }, { key: "body_en", label: "Description / URL", type: "textarea" }, { key: "hero_image", label: "Image", type: "image" }, { key: "sort_order", label: "Display order", type: "number" }, { key: "is_published", label: "Published", type: "boolean" },
@@ -451,8 +458,8 @@ const sections: Section[] = [
   },
   {
     table: "blog_posts",
-    label: "Blog",
-    description: "Draft, publish and update journal articles.",
+    label: "Hội An Experiences",
+    description: "Draft, publish and update SEO travel guides with images inside the article body.",
     titleKey: "title_en",
     order: "created_at",
     defaults: {
@@ -477,8 +484,8 @@ const sections: Section[] = [
       { key: "category_vi", label: "Category — Vietnamese" },
       { key: "excerpt_en", label: "Excerpt — English", type: "textarea" },
       { key: "excerpt_vi", label: "Excerpt — Vietnamese", type: "textarea" },
-      { key: "content_en", label: "Article — English", type: "textarea" },
-      { key: "content_vi", label: "Article — Vietnamese", type: "textarea" },
+      { key: "content_en", label: "Article — English", type: "article" },
+      { key: "content_vi", label: "Article — Vietnamese", type: "article" },
       { key: "cover_image", label: "Cover image", type: "image" },
       {
         key: "status",
@@ -734,14 +741,16 @@ export default function AdminPanel() {
       let records = (data || []) as Row[];
       if (active === "blog_posts") {
         const slugs = new Set(records.map((row) => row.slug));
-        setRows([
-          ...records,
-          ...seoDraftTemplates.filter(
-            (row) =>
-              !slugs.has(row.slug) &&
-              !deletedTemplateKeys.includes(String(row.slug)),
-          ),
-        ]);
+        const missing = seoDraftTemplates.filter((row) => !slugs.has(row.slug) && !deletedTemplateKeys.includes(String(row.slug)));
+        if (missing.length) {
+          const seedRows = missing.map(({ __template: _template, ...row }) => row);
+          const { error: seedError } = await supabase.from("blog_posts").insert(seedRows);
+          if (!seedError) {
+            const { data: refreshed } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
+            records = (refreshed || []) as Row[];
+          }
+        }
+        setRows(records);
       } else if (active === "services") {
         const slugs = new Set(records.map((row) => row.slug));
         setRows([
@@ -921,6 +930,22 @@ export default function AdminPanel() {
       .data.publicUrl;
     setEditing((current) => (current ? { ...current, [field]: url } : current));
     setLoading(false);
+    await loadMedia();
+  };
+  const uploadArticleImage = async (file: File, field: string) => {
+    setLoading(true);
+    const safe = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-");
+    const path = `cms/${Date.now()}-${safe}`;
+    const { error } = await supabase.storage.from("inhere-media").upload(path, file, { upsert: false });
+    if (error) {
+      setMessage(error.message);
+      setLoading(false);
+      return;
+    }
+    const url = supabase.storage.from("inhere-media").getPublicUrl(path).data.publicUrl;
+    setEditing((current) => current ? { ...current, [field]: `${String(current[field] || "").trim()}\n\n![Describe this photograph](${url})\n\n` } : current);
+    setLoading(false);
+    setMessage("Image inserted into the article. Replace the caption text if needed.");
     await loadMedia();
   };
   const openAccount = () => {
@@ -1216,6 +1241,7 @@ export default function AdminPanel() {
                 <label
                   className={
                     field.type === "textarea" ||
+                    field.type === "article" ||
                     field.type === "video" ||
                     field.type === "list"
                       ? "wide"
@@ -1224,7 +1250,20 @@ export default function AdminPanel() {
                   key={field.key}
                 >
                   {field.label}
-                  {field.type === "textarea" || field.type === "list" ? (
+                  {field.type === "article" ? (
+                    <div className="admin-article-field">
+                      <textarea
+                        value={String(editing[field.key] ?? "")}
+                        onChange={(e) => setEditing({ ...editing, [field.key]: e.target.value })}
+                        placeholder={'Use # for section headings. Inserted images appear as ![Caption](image-url).'}
+                      />
+                      <label className="admin-article-upload">
+                        <span>＋ Insert image into article body</span>
+                        <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(e) => e.target.files?.[0] && void uploadArticleImage(e.target.files[0], field.key)} />
+                      </label>
+                      <small>Add as many images as needed. Each upload is inserted at the end; move its Markdown line between the paragraphs where it should appear.</small>
+                    </div>
+                  ) : field.type === "textarea" || field.type === "list" ? (
                     <textarea
                       value={
                         field.type === "list" &&
