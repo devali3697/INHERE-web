@@ -5794,6 +5794,38 @@ footer{background:#3b2921}.footer-cta{background:radial-gradient(circle at 16% 2
 .rental-banner{grid-template-columns:1fr 1fr;padding:0;gap:0;overflow:hidden;background:#ded0b9;border-left:0}.rental-banner-image{min-height:520px}.rental-banner-image img{width:100%;height:100%;object-fit:cover;display:block}.rental-banner-copy{padding:58px;display:flex;flex-direction:column;justify-content:center}.rental-banner-copy>a{margin-top:28px;background:#3f2c23;color:#fff;border-color:#3f2c23}
 .masonry-gallery button{position:relative}.masonry-gallery button>span{position:absolute;inset:auto 12px 12px;background:#33231de6;color:#fff;padding:8px 11px;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 .gallery-lightbox,.lookbook-lightbox{touch-action:pan-y}
+
+/* Keep the Services album controls in their grid columns. The legacy
+   `.gallery-lightbox > button` rule otherwise absolutely positions the
+   arrows and collapses the photograph into the narrow controls column. */
+.gallery-lightbox > .gallery-lightbox-arrow {
+  position: relative;
+  inset: auto;
+  cursor: pointer;
+}
+.gallery-lightbox > .gallery-lightbox-arrow.previous {
+  grid-column: 1;
+}
+.gallery-lightbox > figure {
+  grid-column: 2;
+  width: 100%;
+  min-width: 0;
+}
+.gallery-lightbox > figure > img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100dvh - 150px);
+}
+.gallery-lightbox > .gallery-lightbox-arrow.next {
+  grid-column: 3;
+}
+@media(max-width:700px){
+  .gallery-lightbox > figure > img {
+    max-height: calc(100dvh - 170px);
+  }
+}
 .article-inline-image{margin:34px 0}.article-inline-image img{width:100%;max-height:760px;object-fit:cover;display:block}.article-inline-image figcaption{margin-top:9px;color:#77736b;font-size:13px}
 .admin-article-field{display:grid;gap:12px}.admin-article-field textarea{min-height:360px}.admin-article-upload{display:block!important;border:1px dashed #8e877a;padding:14px 16px;cursor:pointer;background:#f5f1e9}.admin-article-upload span{font-weight:700}.admin-article-upload input{display:none}.admin-article-field>small{font-size:12px;line-height:1.5;color:#6c675e}
 .footer-cta{position:relative;isolation:isolate;overflow:hidden;background:#3f2c23}.footer-cta-bg,.footer-cta-shade{position:absolute!important;inset:0;width:100%;height:100%;z-index:-2;object-fit:cover}.footer-cta-shade{z-index:-1;background:linear-gradient(100deg,rgba(48,31,24,.88),rgba(55,37,28,.64)),linear-gradient(0deg,rgba(28,25,19,.4),transparent)}
