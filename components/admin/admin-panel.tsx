@@ -1264,27 +1264,47 @@ export default function AdminPanel() {
                       <small>Add as many images as needed. Each upload is inserted at the end; move its Markdown line between the paragraphs where it should appear.</small>
                     </div>
                   ) : field.type === "textarea" || field.type === "list" ? (
-                    <textarea
-                      value={
-                        field.type === "list" &&
-                        Array.isArray(editing[field.key])
-                          ? (editing[field.key] as unknown[]).join("\n")
-                          : String(editing[field.key] ?? "")
-                      }
-                      onChange={(e) =>
-                        setEditing({
-                          ...editing,
-                          [field.key]:
-                            field.type === "list"
-                              ? e.target.value
-                                  .split("\n")
-                                  .map((item) => item.trim())
-                                  .filter(Boolean)
-                              : e.target.value,
-                        })
-                      }
-                      required={field.required}
-                    />
+                    <>
+                      <textarea
+                        value={
+                          field.type === "list" &&
+                          Array.isArray(editing[field.key])
+                            ? (editing[field.key] as unknown[]).join("\n")
+                            : String(editing[field.key] ?? "")
+                        }
+                        onChange={(e) =>
+                          setEditing({
+                            ...editing,
+                            [field.key]:
+                              field.type === "list"
+                                ? e.target.value
+                                    .split("\n")
+                                    .map((item) => item.trim())
+                                    .filter(Boolean)
+                                : e.target.value,
+                          })
+                        }
+                        required={field.required}
+                        maxLength={field.key.startsWith("excerpt_") ? 180 : undefined}
+                        placeholder={field.key.startsWith("excerpt_") ? "Write a clear 140–160 character summary for Google search results." : undefined}
+                      />
+                      {field.key.startsWith("excerpt_") && (
+                        <div className="admin-seo-helper">
+                          <div className="admin-seo-status">
+                            <span>Used automatically as this article&apos;s Meta Description</span>
+                            <b className={String(editing[field.key] ?? "").length >= 140 && String(editing[field.key] ?? "").length <= 160 ? "good" : ""}>
+                              {String(editing[field.key] ?? "").length} / 160 characters
+                            </b>
+                          </div>
+                          <div className="admin-serp-preview" aria-label="Google search preview">
+                            <small>GOOGLE SEARCH PREVIEW</small>
+                            <strong>{String(editing[field.key === "excerpt_vi" ? "title_vi" : "title_en"] || "Your article title")}</strong>
+                            <span>https://inherestudiohoian.com/experiences/{String(editing.slug || "article-slug")}</span>
+                            <p>{String(editing[field.key] || "Your meta description will appear here.")}</p>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : field.type === "boolean" ? (
                     <input
                       type="checkbox"

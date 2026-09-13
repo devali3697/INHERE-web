@@ -5694,6 +5694,16 @@ footer {
   letter-spacing: 0;
   font-weight: 400;
 }
+.admin-seo-helper{display:grid;gap:12px;margin-top:2px;text-transform:none;letter-spacing:0;font-weight:400}
+.admin-seo-status{display:flex;align-items:center;justify-content:space-between;gap:16px;color:#6c675e;font-size:12px;line-height:1.45}
+.admin-seo-status b{flex:0 0 auto;color:#9b4d3d;font-size:12px;font-weight:700}
+.admin-seo-status b.good{color:#397044}
+.admin-serp-preview{display:grid;gap:5px;padding:17px 18px;border:1px solid #d7cfc3;background:#fff;color:#292622;box-shadow:0 8px 22px rgba(51,42,34,.06)}
+.admin-serp-preview small{margin:0 0 4px;color:#716b64;font-size:11px}
+.admin-serp-preview strong{color:#1a0dab;font:400 18px/1.3 Arial,sans-serif}
+.admin-serp-preview span{color:#188038;font:400 12px/1.35 Arial,sans-serif;overflow-wrap:anywhere}
+.admin-serp-preview p{margin:2px 0 0;color:#4d5156;font:400 13px/1.5 Arial,sans-serif}
+@media(max-width:700px){.admin-seo-status{align-items:flex-start;flex-direction:column;gap:5px}.admin-serp-preview{padding:15px}.admin-serp-preview strong{font-size:17px}}
 .admin-security-note {
   margin: 5px 0 45px;
   padding: 22px;
