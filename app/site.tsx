@@ -2376,6 +2376,26 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
             </tbody>
           </table>
         </div>
+        <div className="pricing-mobile-cards" aria-label="Package comparison">
+          {editablePackages.map((pkg, index) => (
+            <article key={pkg.title}>
+              <header>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{pkg.title.replace(" Package", "")}</h3>
+                <strong>{usdPrices[pkg.title] || pkg.price}</strong>
+              </header>
+              <dl>
+                <div><dt>Outfits</dt><dd>{pkg.short}</dd></div>
+                <div><dt>Makeup &amp; hair</dt><dd>{pkg.makeup}</dd></div>
+                <div><dt>Total duration</dt><dd>3 hours</dd></div>
+                <div><dt>Photoshoot</dt><dd>1.5 hours · Ancient Town</dd></div>
+                <div><dt>Accessories</dt><dd>Unlimited studio selection</dd></div>
+                <div><dt>Photographs</dt><dd>All raw + {pkg.title === "Solo Package" ? "25" : "30"} professionally edited</dd></div>
+              </dl>
+              <button onClick={() => onBook(pkg.title)}>Book {pkg.title.replace(" Package", "")} <Arrow /></button>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="rental-banner">
