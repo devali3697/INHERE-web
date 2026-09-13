@@ -2315,6 +2315,7 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
 
   useEffect(() => {
     document.body.style.overflow = lightbox ? "hidden" : "";
+    document.documentElement.classList.toggle("services-lightbox-open", Boolean(lightbox));
     const handleKey = (event: KeyboardEvent) => {
       if (!lightbox) return;
       if (event.key === "Escape") setLightbox(null);
@@ -2324,6 +2325,7 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
     window.addEventListener("keydown", handleKey);
     return () => {
       document.body.style.overflow = "";
+      document.documentElement.classList.remove("services-lightbox-open");
       window.removeEventListener("keydown", handleKey);
     };
   }, [lightbox, moveLightbox]);

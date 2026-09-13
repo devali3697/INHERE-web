@@ -5821,6 +5821,19 @@ footer{background:#3b2921}.footer-cta{background:radial-gradient(circle at 16% 2
 .gallery-lightbox > .gallery-lightbox-arrow.next {
   grid-column: 3;
 }
+@media(pointer:fine){
+  .services-lightbox-open .studio-cursor {
+    opacity: 0 !important;
+    visibility: hidden;
+  }
+  .services-lightbox-open .gallery-lightbox,
+  .services-lightbox-open .gallery-lightbox * {
+    cursor: default !important;
+  }
+  .services-lightbox-open .gallery-lightbox button {
+    cursor: pointer !important;
+  }
+}
 @media(max-width:700px){
   .gallery-lightbox > figure > img {
     max-height: calc(100dvh - 170px);
