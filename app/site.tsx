@@ -2116,7 +2116,7 @@ function LookbookPage() {
   const active = activeAlbum[activeSlide] || null;
   const move = useCallback((direction: number) => {
     setActiveSlide((current) => activeAlbum.length ? (current + direction + activeAlbum.length) % activeAlbum.length : current);
-  }, [activeAlbum.length]);
+  }, [activeAlbum.length, setActiveSlide]);
 
   useEffect(() => {
     if (!active) return;
@@ -2781,7 +2781,8 @@ function PackageDetailPage({ slug }: { slug: string }) {
       </section>
       <section className="package-detail-overview" id="package-overview">
         <div className="package-carousel" aria-roledescription="carousel" aria-label={`${details.title} photographs`} onTouchStart={(event) => { touchX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={(event) => { if (touchX.current === null) return; const delta = event.changedTouches[0].clientX - touchX.current; if (Math.abs(delta) > 45) move(delta > 0 ? -1 : 1); touchX.current = null; }}>
-          <img src={slides[active].image} alt={slides[active].title} />
+          <img className="package-carousel-backdrop" src={slides[active].image} alt="" aria-hidden="true" />
+          <img className="package-carousel-image" src={slides[active].image} alt={slides[active].title} />
           <div className="package-carousel-controls">
             <button onClick={() => move(-1)} aria-label="Previous package photograph">←</button>
             <span>{String(active + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}</span>

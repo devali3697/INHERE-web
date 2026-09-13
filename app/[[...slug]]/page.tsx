@@ -1,6 +1,37 @@
 import type { Metadata } from "next";
 import InhereSite from "../site";
 
+type ArticleMetadataRow = {
+  title_en: string | null;
+  excerpt_en: string | null;
+  cover_image: string | null;
+};
+
+async function getPublishedArticleMetadata(slug: string): Promise<ArticleMetadataRow | null> {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    "https://phqyikcotdmachgvoqyb.supabase.co";
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    "sb_publishable_9SyO3dsyKVWI2M32TKKj9Q_fdmYkEzS";
+  const query = new URLSearchParams({
+    slug: `eq.${slug}`,
+    status: "eq.published",
+    select: "title_en,excerpt_en,cover_image",
+    limit: "1",
+  });
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/blog_posts?${query}`, {
+      headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+    });
+    if (!response.ok) return null;
+    const rows = (await response.json()) as ArticleMetadataRow[];
+    return rows[0] || null;
+  } catch {
+    return null;
+  }
+}
+
 const pageMeta: Record<string, { title: string; description: string }> = {
   "/": {
     title: "INHERE | Áo Dài, Makeup & Photoshoot in Hội An",
@@ -36,7 +67,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
   const { slug = [] } = await params;
   const path = `/${slug.join("/")}`;
   const normalizedPath = path === "/" ? "/" : path.replace(/\/$/, "");
-  const meta = pageMeta[normalizedPath] || pageMeta["/"];
+  const isArticle =
+    slug.length === 2 && (slug[0] === "experiences" || slug[0] === "blog");
+  const article = isArticle ? await getPublishedArticleMetadata(slug[1]) : null;
+  const articleDescription = article?.excerpt_en?.replace(/\s+/g, " ").trim();
+  const meta = article
+    ? {
+        title: `${article.title_en || "Hội An Travel Guide"} | INHERE`,
+        description: articleDescription || pageMeta["/journal"].description,
+      }
+    : pageMeta[normalizedPath] || pageMeta["/"];
   const isAdmin = normalizedPath.startsWith("/admin");
 
   return {
@@ -44,12 +84,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
     alternates: { canonical: isAdmin ? undefined : normalizedPath },
     robots: isAdmin ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
-      type: "website",
+      type: article ? "article" : "website",
       url: normalizedPath,
       siteName: "INHERE Hội An",
       title: meta.title,
       description: meta.description,
-      images: [{ url: "/inhere-logo.jpg", alt: "INHERE Hội An" }],
+      images: [{ url: article?.cover_image || "/inhere-logo.jpg", alt: article?.title_en || "INHERE Hội An" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title,
+      description: meta.description,
+      images: [article?.cover_image || "/inhere-logo.jpg"],
     },
   };
 }
