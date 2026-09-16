@@ -49,6 +49,22 @@ const pageMeta: Record<string, { title: string; description: string }> = {
     title: "Áo Dài & Vietnamese Outfit Rental in Hội An | INHERE",
     description: "Reserve Áo Dài and Vietnamese historical outfits in Hội An with matching accessories from INHERE.",
   },
+  "/services/solo-photoshoot": {
+    title: "Solo Áo Dài Photoshoot in Hội An | INHERE",
+    description: "Explore INHERE's solo Full Combo: Áo Dài, makeup, hairstyling and an outdoor photoshoot in Hội An. From 1,800,000 VND, with 25 edited photos.",
+  },
+  "/services/couple-photoshoot": {
+    title: "Couple Áo Dài Photoshoot in Hội An | INHERE",
+    description: "Explore INHERE's couple Full Combo: two outfits, styling, makeup and an outdoor photoshoot across Hội An. From 2,700,000 VND, with 30 edited photos.",
+  },
+  "/services/family-photoshoot": {
+    title: "Family Photoshoot & Áo Dài in Hội An | INHERE",
+    description: "Plan a family Áo Dài experience in Hội An with outfits, accessories, makeup and a guided outdoor photoshoot. Packages start from 3,500,000 VND.",
+  },
+  "/services/group-photoshoot": {
+    title: "Friend Group Photoshoot in Hội An | INHERE",
+    description: "Book an outdoor friend group photoshoot in Hội An with Áo Dài outfits, accessories and makeup for female guests. Packages start from 2,900,000 VND.",
+  },
   "/portfolio": {
     title: "Hội An Photography Lookbook | INHERE",
     description: "Explore outdoor Áo Dài, couple, family and lantern-night photography stories captured across Hội An Ancient Town.",
@@ -56,6 +72,10 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   "/journal": {
     title: "Hội An Travel & Photography Journal | INHERE",
     description: "Local Hội An guides, photography locations, Áo Dài advice and travel inspiration from the INHERE team.",
+  },
+  "/experiences": {
+    title: "Hội An Photography & Travel Journal | INHERE",
+    description: "Read local guides to Hội An's outdoor photography locations, Áo Dài styling, rooftop views and Ancient Town experiences from INHERE.",
   },
   "/faq": {
     title: "FAQ, Packages & Photoshoot Policies | INHERE Hội An",
@@ -102,5 +122,40 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 
 export default async function CatchAllPage({ params }: { params: Promise<{ slug?: string[] }> }) {
   const { slug = [] } = await params;
-  return <InhereSite initialPath={`/${slug.join("/")}`} />;
+  const path = `/${slug.join("/")}`;
+  const localBusiness = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://inherestudiohoian.com/#studio",
+    name: "INHERE Studio Hội An",
+    url: "https://inherestudiohoian.com/",
+    image: "https://inherestudiohoian.com/inhere-logo.jpg",
+    description: "Outdoor Áo Dài photography, Vietnamese styling, makeup and outfit rental experiences in Hội An.",
+    telephone: "+84 898 199 099",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "24 Đào Duy Từ",
+      addressLocality: "Hội An",
+      addressCountry: "VN",
+    },
+    areaServed: { "@type": "Place", name: "Hội An" },
+    sameAs: [
+      "https://www.instagram.com/inhere.studiohoian/",
+      "https://www.facebook.com/ThueAoDaiHoiAn.InHere",
+      "https://www.tiktok.com/@inhere.studiohoian/",
+      "https://www.youtube.com/@Inhere.studioHoiAn",
+    ],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "INHERE Hội An Experiences",
+      itemListElement: [
+        { "@type": "OfferCatalog", name: "Full Combo Áo Dài, makeup and outdoor photoshoot", url: "https://inherestudiohoian.com/services" },
+        { "@type": "OfferCatalog", name: "Áo Dài outfit rental", url: "https://inherestudiohoian.com/services/outfit-rental" },
+      ],
+    },
+  };
+  return <>
+    {path === "/" && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />}
+    <InhereSite initialPath={path} />
+  </>;
 }
