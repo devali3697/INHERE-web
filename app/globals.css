@@ -5923,3 +5923,16 @@ footer{background:#3b2921}.footer-cta{background:radial-gradient(circle at 16% 2
   .footer-booking form>button{width:100%;min-height:62px;font-size:12px;padding:0 18px}
   .footer-bottom{padding-left:20px;padding-right:20px;text-align:center;font-size:12px}
 }
+
+/* Keep mobile footer columns in the natural reading order, without inherited row heights. */
+@media(max-width:700px){
+  .footer-main{grid-auto-rows:max-content!important;align-items:start!important}
+  .footer-main>.footer-logo,.footer-main>.footer-connect,.footer-main>.footer-booking{grid-row:auto!important;min-height:0!important;height:auto!important;align-self:start!important}
+}
+.footer-booking textarea{width:100%;min-height:92px;resize:vertical;border:0;border-bottom:1px solid rgba(255,255,255,.28);border-radius:0;background:transparent;color:#fff;padding:10px 0 12px;outline:none;font:400 16px var(--sans)}
+.footer-booking textarea:focus{border-bottom-color:var(--beige)}
+.footer-booking textarea::placeholder{color:#ada69e}
+.booking-field-help{display:block;margin-top:4px;color:#d5c8b5;font-size:12px;line-height:1.55;letter-spacing:normal;text-transform:none;font-weight:400}
+.booking .booking-field-help{color:#a59b8e}
+.booking-contact-warning{margin:8px 0 0;padding:15px 17px;border-left:3px solid #ca7467;background:rgba(163,68,57,.17);color:#ffbcb2;font:500 13px/1.6 var(--sans);letter-spacing:normal;text-transform:none}
+.booking .booking-contact-warning{color:#f3a99c}

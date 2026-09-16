@@ -260,6 +260,7 @@ const sections: Section[] = [
       { key: "customer_name", label: "Guest name", required: true },
       { key: "phone", label: "WhatsApp / social contact", required: true },
       { key: "preferred_date", label: "Expected date", type: "date" },
+      { key: "guest_count", label: "Number of participants", type: "number" },
       { key: "service_name", label: "Service of interest", required: true },
       {
         key: "status",
@@ -267,7 +268,7 @@ const sections: Section[] = [
         type: "select",
         options: ["new", "contacted", "confirmed", "completed", "cancelled"],
       },
-      { key: "notes", label: "Notes", type: "textarea" },
+      { key: "notes", label: "Photoshoot time, women needing makeup & additional notes", type: "textarea" },
     ],
   },
   {
@@ -304,7 +305,7 @@ const sections: Section[] = [
   {
     table: "page_content",
     label: "Pages",
-    description: "Hero and page headings, descriptions and images.",
+    description: "Homepage and general page headings and images. Footer, Services, Lookbook, FAQ and Reviews each have their own section; their items are excluded here.",
     titleKey: "page_key",
     order: "sort_order",
     defaults: {
@@ -725,7 +726,7 @@ export default function AdminPanel() {
     const sourceTable = section.sourceTable || active;
     let query = supabase.from(sourceTable).select("*");
     if (section.filterPrefix) query = query.like("page_key", `${section.filterPrefix}%`);
-    if (active === "faq_content") query = query.like("page_key", "faq-%");
+    if (active === "faq_content") query = query.like("page_key", "faq-%").not("page_key", "like", "faq-price-%");
     if (active === "page_content") query = query
       .not("page_key", "like", "faq-%").not("page_key", "like", "lookbook-%")
       .not("page_key", "like", "shared-detail-%").not("page_key", "like", "google-reviews-%")
@@ -796,6 +797,7 @@ export default function AdminPanel() {
               .from("page_content")
               .select("*")
               .like("page_key", "faq-%")
+              .not("page_key", "like", "faq-price-%")
               .order("sort_order");
             records = (refreshed || []) as Row[];
           }

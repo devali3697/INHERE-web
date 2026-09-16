@@ -4,6 +4,8 @@ type BookingNotification = {
   preferredDate?: string | null;
   serviceName?: string;
   guestCount?: number;
+  photoshootTime?: string;
+  womenNeedingMakeup?: number;
   notes?: string;
   source?: string;
 };
@@ -78,6 +80,8 @@ export async function POST(request: Request) {
               <tr><td style="padding:9px 0;color:#756b63">Preferred date</td><td style="padding:9px 0">${escapeHtml(booking.preferredDate || "Not provided")}</td></tr>
               <tr><td style="padding:9px 0;color:#756b63">Service/package</td><td style="padding:9px 0">${escapeHtml(serviceName)}</td></tr>
               <tr><td style="padding:9px 0;color:#756b63">Guests</td><td style="padding:9px 0">${escapeHtml(booking.guestCount || 1)}</td></tr>
+              <tr><td style="padding:9px 0;color:#756b63">Photoshoot time</td><td style="padding:9px 0">${escapeHtml(booking.photoshootTime || "To discuss")}</td></tr>
+              <tr><td style="padding:9px 0;color:#756b63">Women needing makeup</td><td style="padding:9px 0">${escapeHtml(booking.womenNeedingMakeup ?? 0)}</td></tr>
               <tr><td style="padding:9px 0;color:#756b63">Source</td><td style="padding:9px 0">${escapeHtml(booking.source || "Website")}</td></tr>
             </table>
             <div style="margin-top:18px;padding:18px;background:#f7f3ef">

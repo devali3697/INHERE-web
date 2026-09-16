@@ -35,7 +35,14 @@ type BookingRecord = {
   notes: string;
 };
 
-async function notifyBookingByEmail(booking: BookingRecord, source: string) {
+const bookingContactWarning = "Note: Please enter your correct contact information so we can reach out to advise and confirm your booking. If the contact information is incorrect or missing, we will not be able to confirm your booking.";
+const bookingTimeHelp = "What time would you like to shoot? Please arrive 90 minutes early for makeup and costume selection.";
+
+function bookingNotes(time: string, women: string, notes: string, context: string) {
+  return `${context}\nPhotoshoot time: ${time || "To discuss"}\nWomen needing makeup: ${women || "0"}\nAdditional notes: ${notes.trim() || "None"}`;
+}
+
+async function notifyBookingByEmail(booking: BookingRecord, source: string, time?: string, women?: string) {
   try {
     await fetch("/api/booking-notification", {
       method: "POST",
@@ -46,6 +53,8 @@ async function notifyBookingByEmail(booking: BookingRecord, source: string) {
         preferredDate: booking.preferred_date,
         serviceName: booking.service_name,
         guestCount: booking.guest_count,
+        photoshootTime: time || "To discuss",
+        womenNeedingMakeup: Number(women || 0),
         notes: booking.notes,
         source,
       }),
@@ -1468,6 +1477,8 @@ function Booking({
   const [service, setService] = useState(preset || "Couple Photoshoot");
   const [date, setDate] = useState("");
   const [people, setPeople] = useState("2");
+  const [shootTime, setShootTime] = useState("");
+  const [women, setWomen] = useState("0");
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [notes, setNotes] = useState("");
@@ -1498,7 +1509,7 @@ function Booking({
       preferred_date: date || null,
       service_name: service,
       guest_count: Number(people) || 1,
-      notes: `${packageContext} Customer notes: ${notes.trim() || "None."}`,
+      notes: bookingNotes(shootTime, women, notes, packageContext),
     };
     try {
       const { error } = await supabase.from("booking_requests").insert(booking);
@@ -1506,7 +1517,7 @@ function Booking({
         setResultMessage("We couldn't send your request. Please contact us on WhatsApp.");
         return;
       }
-      await notifyBookingByEmail(booking, "Guided booking form");
+      await notifyBookingByEmail(booking, "Guided booking form", shootTime, women);
       setResultMessage("Thank you — your booking request has been received.");
     } finally {
       submitLock.current = false;
@@ -1575,13 +1586,22 @@ function Booking({
                 />
               </label>
               <label>
-                Number of guests
+                Photoshoot Time
+                <input type="time" value={shootTime} onChange={(e) => setShootTime(e.target.value)} />
+                <span className="booking-field-help">{bookingTimeHelp}</span>
+              </label>
+              <label>
+                Number of participants
                 <input
                   type="number"
                   min="1"
                   value={people}
                   onChange={(e) => setPeople(e.target.value)}
                 />
+              </label>
+              <label>
+                Number of women needing makeup
+                <input type="number" min="0" max={people || undefined} value={women} onChange={(e) => setWomen(e.target.value)} />
               </label>
               <label>
                 Your name
@@ -1621,9 +1641,11 @@ function Booking({
                   <span>Guests</span>
                   {people}
                 </p>
+                <p><span>Photoshoot time</span>{shootTime || "To discuss"}</p>
+                <p><span>Women needing makeup</span>{women || "0"}</p>
               </div>
               <label>
-                Anything else we should know?
+                Additional Notes
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -1646,7 +1668,7 @@ function Booking({
               <button
                 key="continue"
                 type="button"
-                disabled={step === 2 && (!name.trim() || !contact.trim())}
+                disabled={step === 2 && (!name.trim() || !contact.trim() || Number(people) < 1 || Number(women) < 0 || Number(women) > Number(people))}
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
@@ -1664,6 +1686,7 @@ function Booking({
             )}
           </div>
           {resultMessage && <p className="booking-result" role="status">{resultMessage}</p>}
+          {step === 3 && <p className="booking-contact-warning">{bookingContactWarning}</p>}
         </form>
       </div>
     </div>
@@ -1691,6 +1714,10 @@ function Footer({ onBook }: { onBook: () => void }) {
   const [contact, setContact] = useState("");
   const [date, setDate] = useState("");
   const [service, setService] = useState("Rental Ao Dai");
+  const [shootTime, setShootTime] = useState("");
+  const [participants, setParticipants] = useState("1");
+  const [women, setWomen] = useState("0");
+  const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [bookingMessage, setBookingMessage] = useState("");
   const submitLock = useRef(false);
@@ -1706,8 +1733,8 @@ function Footer({ onBook }: { onBook: () => void }) {
       phone: contact.trim(),
       preferred_date: date,
       service_name: service,
-      guest_count: 1,
-      notes: "Submitted from the footer booking form",
+      guest_count: Number(participants),
+      notes: bookingNotes(shootTime, women, notes, "Submitted from the footer booking form."),
     };
     try {
       const { error } = await supabase.from("booking_requests").insert(booking);
@@ -1717,11 +1744,15 @@ function Footer({ onBook }: { onBook: () => void }) {
         );
         return;
       }
-      await notifyBookingByEmail(booking, "Footer booking form");
+      await notifyBookingByEmail(booking, "Footer booking form", shootTime, women);
       setName("");
       setContact("");
       setDate("");
       setService("Rental Ao Dai");
+      setShootTime("");
+      setParticipants("1");
+      setWomen("0");
+      setNotes("");
       setBookingMessage("Thank you — your booking request has been received.");
     } finally {
       submitLock.current = false;
@@ -1893,6 +1924,23 @@ function Footer({ onBook }: { onBook: () => void }) {
                 ))}
               </select>
             </label>
+            <label>
+              Photoshoot Time
+              <input type="time" value={shootTime} onChange={(e) => setShootTime(e.target.value)} />
+              <span className="booking-field-help">{bookingTimeHelp}</span>
+            </label>
+            <label>
+              Number of participants
+              <input type="number" min="1" required value={participants} onChange={(e) => setParticipants(e.target.value)} />
+            </label>
+            <label>
+              Number of women needing makeup
+              <input type="number" min="0" max={participants || undefined} required value={women} onChange={(e) => setWomen(e.target.value)} />
+            </label>
+            <label>
+              Additional Notes
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Tell us about your group or special requests" rows={3} />
+            </label>
             <button type="submit" disabled={submitting}>
               {submitting && <span className="booking-spinner" aria-hidden="true" />}
               <span>{submitting ? "Sending your request…" : "Send Booking Request"}</span>
@@ -1903,6 +1951,7 @@ function Footer({ onBook }: { onBook: () => void }) {
                 {bookingMessage}
               </p>
             )}
+            <p className="booking-contact-warning">{bookingContactWarning}</p>
           </form>
         </div>
       </div>
