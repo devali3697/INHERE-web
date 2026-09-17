@@ -44,7 +44,7 @@ function bookingNotes(time: string, women: string, notes: string, context: strin
 
 async function notifyBookingByEmail(booking: BookingRecord, source: string, time?: string, women?: string) {
   try {
-    await fetch("/api/booking-notification", {
+    const response = await fetch("/api/booking-notification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -59,10 +59,18 @@ async function notifyBookingByEmail(booking: BookingRecord, source: string, time
         source,
       }),
     });
+    if (!response.ok) {
+      console.error("Booking saved, but email notification failed", response.status);
+      return false;
+    }
+    return true;
   } catch (error) {
     console.error("Booking saved, but email notification failed", error);
+    return false;
   }
 }
+
+const bookingEmailWarning = "Your request was saved, but the email alert could not be sent. Please message us on WhatsApp to confirm your booking.";
 
 const copy = {
   en: {
@@ -1517,8 +1525,8 @@ function Booking({
         setResultMessage("We couldn't send your request. Please contact us on WhatsApp.");
         return;
       }
-      await notifyBookingByEmail(booking, "Guided booking form", shootTime, women);
-      setResultMessage("Thank you — your booking request has been received.");
+      const emailSent = await notifyBookingByEmail(booking, "Guided booking form", shootTime, women);
+      setResultMessage(emailSent ? "Thank you — your booking request has been received." : bookingEmailWarning);
     } finally {
       submitLock.current = false;
       setSubmitting(false);
@@ -1744,7 +1752,7 @@ function Footer({ onBook }: { onBook: () => void }) {
         );
         return;
       }
-      await notifyBookingByEmail(booking, "Footer booking form", shootTime, women);
+      const emailSent = await notifyBookingByEmail(booking, "Footer booking form", shootTime, women);
       setName("");
       setContact("");
       setDate("");
@@ -1753,7 +1761,7 @@ function Footer({ onBook }: { onBook: () => void }) {
       setParticipants("1");
       setWomen("0");
       setNotes("");
-      setBookingMessage("Thank you — your booking request has been received.");
+      setBookingMessage(emailSent ? "Thank you — your booking request has been received." : bookingEmailWarning);
     } finally {
       submitLock.current = false;
       setSubmitting(false);
@@ -2506,14 +2514,14 @@ function OutfitRentalPage() {
         setMessage("We couldn't send your request. Please contact us on WhatsApp.");
         return;
       }
-      await notifyBookingByEmail(booking, "Outfit rental page");
+      const emailSent = await notifyBookingByEmail(booking, "Outfit rental page");
       setName("");
       setContact("");
       setDate("");
       setPeople(1);
       setOutfit("Áo Dài");
       setNotes("");
-      setMessage("Thank you — your outfit rental request has been received.");
+      setMessage(emailSent ? "Thank you — your outfit rental request has been received." : bookingEmailWarning);
     } finally {
       submitLock.current = false;
       setSubmitting(false);
