@@ -144,7 +144,7 @@ const packageTemplates: Row[] = [
     __template: true,
   },
   {
-    slug: "full-combo-friend-group",
+    slug: "full-combo-group",
     title_en: "Friend Group",
     title_vi: "Gói nhóm bạn",
     description_en: "Outfits & accessories for all",
@@ -357,7 +357,7 @@ const sections: Section[] = [
   {
     table: "services",
     label: "Package Covers & Details",
-    description: "Edit the Solo, Couple, Family and Group cards. The Main image is the package cover shown on the website.",
+    description: "Edit the four Full Combo packages only. The Main image controls the matching Homepage category card, Services pricing card and package cover. Manage the multi-photo slider separately under Gallery Photos.",
     titleKey: "title_en",
     order: "sort_order",
     defaults: {
@@ -752,6 +752,7 @@ export default function AdminPanel() {
     }
     const sourceTable = section.sourceTable || active;
     let query = supabase.from(sourceTable).select("*");
+    if (active === "services") query = query.like("slug", "full-combo-%");
     if (active === "album_photos" && albumFilter)
       query = query.eq("album_id", albumFilter);
     if (section.filterPrefix) query = query.like("page_key", `${section.filterPrefix}%`);
@@ -1213,7 +1214,7 @@ export default function AdminPanel() {
                     ? ""
                     : "no-media"
                 }
-                key={String(row.id)}
+                key={String(row.id || row.slug || row.page_key)}
               >
                 {section.fields.find((field) => field.type === "image") && (
                   <img
