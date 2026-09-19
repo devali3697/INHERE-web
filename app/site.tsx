@@ -687,8 +687,8 @@ function Intro({ lang }: { lang: Language }) {
 function FullCombo({ onBook }: { onBook: () => void }) {
   const { services, albums } = useCms();
   const image =
-    albums.find((album) => album.slug === "package-solo")?.image ||
     services.find((service) => service.slug === "full-combo-solo")?.image ||
+    albums.find((album) => album.slug === "package-solo")?.image ||
     clientAlbumSets.solo[0];
   return (
     <section id="full-combo" className="full-combo section">
@@ -776,14 +776,12 @@ function CustomerCategories() {
   const coverFor = (title: string) => {
     const key = title.toLowerCase();
     const packageAlbum = albums.find((album) => album.slug === `package-${key}`);
-    const managedService = services.find(
-      (service) =>
-        service.slug === `full-combo-${key}` ||
-        service.slug === `${key}-photoshoot`,
-    );
+    const managedService =
+      services.find((service) => service.slug === `full-combo-${key}`) ||
+      services.find((service) => service.slug === `${key}-photoshoot`);
     return (
-      packageAlbum?.image ||
       managedService?.image ||
+      packageAlbum?.image ||
       customerCategories.find((category) => category.title === title)?.image ||
       images.solo
     );
