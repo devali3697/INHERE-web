@@ -2985,7 +2985,7 @@ function PackageDetailPage({ slug, lang }: { slug: string; lang: Language }) {
   const ui = vi ? {
     details: "CHI TIẾT GÓI", total: "Tổng thời gian", hours: "3 giờ", originals: "Ảnh gốc", allRaw: "Toàn bộ ảnh gốc",
     edits: "Ảnh chỉnh sửa chuyên nghiệp", edited: `${details.edited} ảnh đã chỉnh sửa`, applies: "ÁP DỤNG CHO GÓI NÀY",
-    shared: "Thông tin buổi chụp chung", book: "Đặt gói", previous: "Ảnh trước", next: "Ảnh tiếp theo",
+    shared: "Thông tin buổi chụp chung", book: "Đặt", previous: "Ảnh trước", next: "Ảnh tiếp theo",
   } : {
     details: "PACKAGE DETAILS", total: "Total experience", hours: "3 hours", originals: "Original photographs", allRaw: "All raw photos",
     edits: "Professional edits", edited: `${details.edited} edited photos`, applies: "APPLIES TO THIS PACKAGE",
