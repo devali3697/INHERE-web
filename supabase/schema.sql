@@ -77,6 +77,9 @@ create table if not exists public.album_photos (
   created_at timestamptz not null default now()
 );
 
+create index if not exists album_photos_album_id_idx
+  on public.album_photos (album_id);
+
 create table if not exists public.blog_posts (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
@@ -86,6 +89,18 @@ create table if not exists public.blog_posts (
   excerpt_vi text not null default '',
   content_en text not null default '',
   content_vi text not null default '',
+  section_1_heading_en text not null default '',
+  section_1_heading_vi text not null default '',
+  section_1_body_en text not null default '',
+  section_1_body_vi text not null default '',
+  section_2_heading_en text not null default '',
+  section_2_heading_vi text not null default '',
+  section_2_body_en text not null default '',
+  section_2_body_vi text not null default '',
+  section_3_heading_en text not null default '',
+  section_3_heading_vi text not null default '',
+  section_3_body_en text not null default '',
+  section_3_body_vi text not null default '',
   category_en text not null default '',
   category_vi text not null default '',
   cover_image text,

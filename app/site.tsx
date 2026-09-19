@@ -287,9 +287,24 @@ type CmsService = (typeof services)[number] & {
   priceLabel?: string;
   inclusions?: string[];
 };
-type CmsAlbum = (typeof albums)[number];
+type CmsAlbumPhoto = {
+  id: string;
+  image: string;
+  alt: string;
+  sortOrder: number;
+};
+type CmsAlbum = (typeof albums)[number] & {
+  id?: string;
+  slug?: string;
+  photos?: CmsAlbumPhoto[];
+};
 type CmsExperience = (typeof experiences)[number];
-type CmsArticle = (typeof articles)[number] & { content?: string; date?: string };
+type CmsArticleSection = { heading: string; body: string };
+type CmsArticle = (typeof articles)[number] & {
+  content?: string;
+  date?: string;
+  sections?: CmsArticleSection[];
+};
 type CmsTestimonial = {
   id: string;
   quote: string;
@@ -671,7 +686,11 @@ function Intro({ lang }: { lang: Language }) {
 }
 
 function FullCombo({ onBook }: { onBook: () => void }) {
-  const image = clientAlbumSets.solo[0];
+  const { services, albums } = useCms();
+  const image =
+    albums.find((album) => album.slug === "package-solo")?.image ||
+    services.find((service) => service.slug === "full-combo-solo")?.image ||
+    clientAlbumSets.solo[0];
   return (
     <section id="full-combo" className="full-combo section">
       <div className="full-combo-visual">
@@ -754,7 +773,22 @@ const customerCategories = [
 ];
 
 function CustomerCategories() {
-  const covers: Record<string, string> = { Solo: clientAlbumSets.solo[0], Couple: clientAlbumSets.couple[0], Family: clientAlbumSets.family[0], Group: clientAlbumSets.group[0] };
+  const { services, albums } = useCms();
+  const coverFor = (title: string) => {
+    const key = title.toLowerCase();
+    const packageAlbum = albums.find((album) => album.slug === `package-${key}`);
+    const managedService = services.find(
+      (service) =>
+        service.slug === `full-combo-${key}` ||
+        service.slug === `${key}-photoshoot`,
+    );
+    return (
+      packageAlbum?.image ||
+      managedService?.image ||
+      customerCategories.find((category) => category.title === title)?.image ||
+      images.solo
+    );
+  };
   return (
     <section className="customer-categories section">
       <div className="category-heading">
@@ -775,7 +809,7 @@ function CustomerCategories() {
             key={category.title}
           >
             <img
-              src={covers[category.title] || category.image}
+              src={coverFor(category.title)}
               alt={`${category.title} photoshoot in Hội An`}
             />
             <div className="category-shade" />
@@ -813,7 +847,7 @@ function Albums() {
       <div className="album-grid">
         {albums.map((a, i) => (
           <a
-            href={`/albums/${a.title.toLowerCase().replaceAll(" ", "-")}`}
+            href={`/albums/${a.slug || a.title.toLowerCase().replaceAll(" ", "-")}`}
             className={`album a${i + 1}`}
             key={a.title}
           >
@@ -1091,10 +1125,13 @@ function JournalIndex() {
   );
 }
 
-function JournalArticle({ article }: { article: CmsArticle }) {
+function JournalArticle({ article, lang }: { article: CmsArticle; lang: Language }) {
   const { articles } = useCms();
   const rawSections = (article.content || "").split(/\n(?=#{1,3}\s)/).map((part) => part.trim()).filter(Boolean);
-  const sections = rawSections.length > 1 ? rawSections.map((part, index) => {
+  const sections = article.sections?.length ? article.sections.map((section) => ({
+    ...section,
+    id: section.heading.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+  })) : rawSections.length > 1 ? rawSections.map((part, index) => {
     const lines = part.split("\n");
     const heading = lines[0].replace(/^#{1,3}\s*/, "") || `Travel note ${index + 1}`;
     return { id: heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), heading, body: lines.slice(1).join("\n").trim() || "Add your detailed English article copy and supporting images here." };
@@ -1108,18 +1145,18 @@ function JournalArticle({ article }: { article: CmsArticle }) {
     <header className="journal-single-hero"><img src={article.image} alt={article.title} /><div /><p>{article.cat} · INHERE JOURNAL</p><h1>{article.title}</h1><span>{article.excerpt}</span></header>
     <div className="journal-reading-layout">
       <article className="journal-reading">
-        <nav className="article-toc" aria-label="Table of contents"><p>IN THIS GUIDE</p><h2>Table of Contents</h2><ol>{sections.map((section, index) => <li key={section.id}><a href={`#${section.id}`}><span>{String(index + 1).padStart(2, "0")}</span>{section.heading}</a></li>)}</ol></nav>
+        <nav className="article-toc" aria-label={lang === "vi" ? "Mục lục" : "Table of contents"}><p>{lang === "vi" ? "TRONG CẨM NANG NÀY" : "IN THIS GUIDE"}</p><h2>{lang === "vi" ? "Mục lục" : "Table of Contents"}</h2><ol>{sections.map((section, index) => <li key={section.id}><a href={`#${section.id}`}><span>{String(index + 1).padStart(2, "0")}</span>{section.heading}</a></li>)}</ol></nav>
         {sections.map((section, index) => <section id={section.id} key={section.id}><p className="article-section-number">0{index + 1}</p><h2>{section.heading}</h2>{section.body.split("\n").filter(Boolean).map((text, i) => {
           const imageMatch = text.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/);
           if (imageMatch) return <figure className="article-inline-image" key={`${section.id}-${i}`}><img src={imageMatch[2]} alt={imageMatch[1] || `${article.title} supporting photograph`} loading="lazy" /><figcaption>{imageMatch[1]}</figcaption></figure>;
-          if (/\[INHERE .*BLOCK|\[INHERE PROMO/i.test(text)) return <div className="article-promo" key={`${section.id}-${i}`}><span>INHERE EXPERIENCE</span><h3>{text.replace(/^\[|\]$/g, "")}</h3><a href="/services">View Services &amp; Pricing <Arrow /></a></div>;
+          if (/\[INHERE .*BLOCK|\[INHERE PROMO/i.test(text)) return <div className="article-promo" key={`${section.id}-${i}`}><span>{lang === "vi" ? "TRẢI NGHIỆM INHERE" : "INHERE EXPERIENCE"}</span><h3>{text.replace(/^\[|\]$/g, "")}</h3><a href="/services">{lang === "vi" ? "Xem dịch vụ & bảng giá" : "View Services & Pricing"} <Arrow /></a></div>;
           return <p key={`${section.id}-${i}`}>{text}</p>;
-        })}{index === 0 && <div className="article-promo"><span>THE COMPLETE HỘI AN EXPERIENCE</span><h3>Áo Dài, makeup and a professional photoshoot—planned as one seamless experience.</h3><a href="/services">Explore Full-Combo Packages <Arrow /></a></div>}</section>)}
-        <aside className="journal-author"><div>IN</div><span><b>About the INHERE Team</b><p>Local photographers and stylists sharing practical Hội An knowledge, Vietnamese aesthetics and thoughtful ways to preserve your journey.</p></span></aside>
+        })}{index === 0 && <div className="article-promo"><span>{lang === "vi" ? "TRẢI NGHIỆM HỘI AN TRỌN VẸN" : "THE COMPLETE HỘI AN EXPERIENCE"}</span><h3>{lang === "vi" ? "Áo Dài, trang điểm và buổi chụp ảnh chuyên nghiệp trong một trải nghiệm liền mạch." : "Áo Dài, makeup and a professional photoshoot—planned as one seamless experience."}</h3><a href="/services">{lang === "vi" ? "Khám phá các gói trọn gói" : "Explore Full-Combo Packages"} <Arrow /></a></div>}</section>)}
+        <aside className="journal-author"><div>IN</div><span><b>{lang === "vi" ? "Về đội ngũ INHERE" : "About the INHERE Team"}</b><p>{lang === "vi" ? "Các nhiếp ảnh gia và stylist địa phương chia sẻ kiến thức thực tế về Hội An, thẩm mỹ Việt Nam và những cách lưu giữ hành trình đầy tinh tế." : "Local photographers and stylists sharing practical Hội An knowledge, Vietnamese aesthetics and thoughtful ways to preserve your journey."}</p></span></aside>
       </article>
-      <aside className="journal-sticky-promo"><img src={images.solo} alt="Full-Combo Áo Dài and photoshoot" /><p>INHERE SIGNATURE</p><h2>Full-Combo Áo Dài &amp; Photoshoot</h2><span>3 hours · outfit · makeup · photoshoot · edited photographs</span><a href="/services">View Pricing &amp; Book <Arrow /></a></aside>
+      <aside className="journal-sticky-promo"><img src={images.solo} alt="Full-Combo Áo Dài and photoshoot" /><p>INHERE SIGNATURE</p><h2>Full-Combo Áo Dài &amp; Photoshoot</h2><span>{lang === "vi" ? "3 giờ · trang phục · trang điểm · chụp ảnh · ảnh chỉnh sửa" : "3 hours · outfit · makeup · photoshoot · edited photographs"}</span><a href="/services">{lang === "vi" ? "Xem giá & đặt lịch" : "View Pricing & Book"} <Arrow /></a></aside>
     </div>
-    <section className="journal-related"><p>CONTINUE READING</p><h2>Related travel stories</h2><div>{related.map((item) => <a href={`/experiences/${item.slug}`} key={item.slug}><img src={item.image} alt={item.title} loading="lazy" /><span>{item.cat}</span><h3>{item.title}</h3></a>)}</div></section>
+    <section className="journal-related"><p>{lang === "vi" ? "ĐỌC TIẾP" : "CONTINUE READING"}</p><h2>{lang === "vi" ? "Những câu chuyện liên quan" : "Related travel stories"}</h2><div>{related.map((item) => <a href={`/experiences/${item.slug}`} key={item.slug}><img src={item.image} alt={item.title} loading="lazy" /><span>{item.cat}</span><h3>{item.title}</h3></a>)}</div></section>
   </main>;
 }
 
@@ -2135,8 +2172,10 @@ function LookbookPage() {
   const [activeCoverIndex, setActiveCoverIndex] = useState<number | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const lightboxTouchX = useRef<number | null>(null);
-  const cmsImages = albums.filter((album) => !/unsplash|pexels/i.test(album.image)).map((album, index) => {
-    const exactCategory = categories.find(([en]) => en === album.meta)?.[0];
+  const cmsImages = albums
+    .filter((album) => !album.slug?.startsWith("package-") && !/unsplash|pexels/i.test(album.image))
+    .map((album, index) => {
+    const exactCategory = categories.find(([en, vi]) => en === album.meta || vi === album.meta)?.[0];
     const meta = `${album.meta} ${album.title}`.toLowerCase();
     const category = exactCategory || (meta.includes("couple") || meta.includes("love")
       ? "Couples & Romance"
@@ -2147,9 +2186,19 @@ function LookbookPage() {
           : meta.includes("family") || meta.includes("group")
             ? "Classic Áo Dài"
             : "The Solo Muse");
-    return { src: album.image, category, alt: `${album.title} — outdoor photography in Hội An`, key: `cms-${index}` };
+    return {
+      src: album.image,
+      category,
+      alt: `${album.title} — outdoor photography in Hội An`,
+      key: `cms-${index}`,
+      photos: album.photos?.length
+        ? album.photos.map((photo) => ({ src: photo.image, alt: photo.alt }))
+        : undefined,
+    };
   });
-  const allImages = [...cmsImages, ...lookbookFallback.map((item, index) => ({ ...item, key: `fallback-${index}` }))]
+  const allImages = (cmsImages.length
+    ? cmsImages
+    : lookbookFallback.map((item, index) => ({ ...item, key: `fallback-${index}`, photos: undefined })))
     .filter((item, index, all) => all.findIndex((candidate) => candidate.src === item.src) === index);
   const visible = filter === "All" ? allImages : allImages.filter((item) => item.category === filter);
   const activeCover = activeCoverIndex === null ? null : visible[activeCoverIndex];
@@ -2163,17 +2212,24 @@ function LookbookPage() {
     "Couples & Romance": clientAlbumSets.couple,
   };
   const activeAlbum = activeCover
-    ? (albumPhotosByCategory[activeCover.category] || [activeCover.src]).map((src, index) => ({
-        src,
+    ? (activeCover.photos?.length
+        ? activeCover.photos
+        : (albumPhotosByCategory[activeCover.category] || [activeCover.src]).map((src, index) => ({
+            src,
+            alt: `${activeCover.category} outdoor album photograph ${index + 1} in Hội An`,
+          }))
+      ).map((photo, index) => ({
+        src: photo.src,
         category: activeCover.category,
-        alt: `${activeCover.category} outdoor album photograph ${index + 1} in Hội An`,
-        key: `album-${activeCover.category}-${index}`,
+        alt: photo.alt,
+        key: `album-${activeCover.key}-${index}`,
       }))
     : [];
   const active = activeAlbum[activeSlide] || null;
+  const activeAlbumLength = activeAlbum.length;
   const move = useCallback((direction: number) => {
-    setActiveSlide((current) => activeAlbum.length ? (current + direction + activeAlbum.length) % activeAlbum.length : current);
-  }, [activeAlbum.length, setActiveSlide]);
+    setActiveSlide((current) => activeAlbumLength ? (current + direction + activeAlbumLength) % activeAlbumLength : current);
+  }, [activeAlbumLength]);
 
   useEffect(() => {
     if (!active) return;
@@ -2312,16 +2368,32 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
     active: number;
   } | null>(null);
   const touchStartX = useRef<number | null>(null);
-  const cmsGallery = albums.filter((album) => !/unsplash|pexels/i.test(album.image)).map((album, index) => {
+  const cmsGallery = albums
+    .filter((album) => album.slug?.startsWith("package-") && !/unsplash|pexels/i.test(album.image))
+    .map((album, index) => {
     const meta = album.meta.toLowerCase();
-    const category = meta.includes("couple")
+    const categoryFromSlug: Record<string, string> = {
+      "package-solo": "Solo",
+      "package-couple": "Couple",
+      "package-family": "Family & Group",
+      "package-group": "Family & Group",
+    };
+    const category = categoryFromSlug[album.slug || ""] || (meta.includes("couple")
       ? "Couple"
       : meta.includes("family") || meta.includes("group")
         ? "Family & Group"
-        : "Solo";
-    return { src: album.image, category, alt: album.title, index };
+        : "Solo");
+    return {
+      src: album.image,
+      category,
+      alt: album.title,
+      index,
+      photos: album.photos?.map((photo) => ({ src: photo.image, alt: photo.alt })),
+    };
   });
-  const gallery = [...cmsGallery, ...galleryFallback]
+  const gallery = (cmsGallery.length
+    ? cmsGallery
+    : galleryFallback.map((item) => ({ ...item, photos: undefined })))
     .filter((item, index, all) => all.findIndex((x) => x.src === item.src) === index);
   const visible = filter === "All" ? gallery.slice(0, 9) : gallery.filter((item) => item.category === filter).slice(0, 9);
   const sharedFor = (packageTitle: string) => [
@@ -2331,12 +2403,19 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
     `All raw photos + ${packageTitle === "Solo Package" ? "25" : "30"} professionally edited photos`,
   ];
   const editablePackages = pricingPackages.map((fallback) => {
+    const packageKey =
+      fallback.title === "Friend Group"
+        ? "group"
+        : fallback.title.replace(" Package", "").toLowerCase();
     const managed = cmsServices.find(
-      (service) =>
-        service.slug.startsWith("full-combo-") &&
-        service.title === fallback.title,
+      (service) => service.slug === `full-combo-${packageKey}`,
     );
-    if (!managed) return { ...fallback, inclusions: sharedFor(fallback.title) };
+    if (!managed) return {
+      ...fallback,
+      packageKey,
+      edited: packageKey === "solo" ? 25 : 30,
+      inclusions: sharedFor(fallback.title),
+    };
     const inclusions = managed.inclusions?.length
       ? managed.inclusions
       : [fallback.makeup];
@@ -2345,7 +2424,9 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
       price: managed.priceLabel || fallback.price,
       short: managed.copy || fallback.short,
       makeup: inclusions[0] || fallback.makeup,
-      inclusions: sharedFor(managed.title),
+      packageKey,
+      edited: packageKey === "solo" ? 25 : 30,
+      inclusions: sharedFor(fallback.title),
     };
   });
 
@@ -2357,6 +2438,10 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
   };
 
   const openAlbum = (cover: (typeof gallery)[number]) => {
+    if (cover.photos?.length) {
+      setLightbox({ title: cover.alt, slides: cover.photos, active: 0 });
+      return;
+    }
     const source = cover.category === "Solo" ? clientAlbumSets.solo : cover.category === "Couple" ? clientAlbumSets.couple : [...clientAlbumSets.family, ...clientAlbumSets.group].slice(0, 30);
     const ordered = [cover.src, ...source.filter((src) => src !== cover.src)].slice(0, 30);
     const slides = ordered.map((src, index) => ({ src, alt: `${cover.alt} — photograph ${index + 1}` }));
@@ -2423,13 +2508,13 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
           <table>
             <thead><tr><th>Full Package Services</th>{editablePackages.map((pkg) => <th key={pkg.title}>{pkg.title.replace(" Package", "")}</th>)}</tr></thead>
             <tbody>
-              <tr><th>Price</th>{editablePackages.map((pkg) => <td key={pkg.title}>{usdPrices[pkg.title] || pkg.price}</td>)}</tr>
+              <tr><th>Price</th>{editablePackages.map((pkg, index) => <td key={pkg.title}>{usdPrices[pricingPackages[index].title] || pkg.price}</td>)}</tr>
               <tr><th>Outfits</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.short}</td>)}</tr>
               <tr><th>Makeup &amp; hair</th>{editablePackages.map((pkg) => <td key={pkg.title}>{pkg.makeup}</td>)}</tr>
               <tr><th>Total duration</th>{editablePackages.map((pkg) => <td key={pkg.title}>3 hours</td>)}</tr>
               <tr><th>Photoshoot</th>{editablePackages.map((pkg) => <td key={pkg.title}>1.5 hours · Ancient Town</td>)}</tr>
               <tr><th>Accessories</th>{editablePackages.map((pkg) => <td key={pkg.title}>Unlimited studio selection</td>)}</tr>
-              <tr><th>Photographs</th>{editablePackages.map((pkg) => <td key={pkg.title}>All raw + {pkg.title === "Solo Package" ? "25" : "30"} professionally edited</td>)}</tr>
+              <tr><th>Photographs</th>{editablePackages.map((pkg) => <td key={pkg.title}>All raw + {pkg.edited} professionally edited</td>)}</tr>
             </tbody>
           </table>
         </div>
@@ -2447,7 +2532,7 @@ function ServicesPricingPage({ onBook }: { onBook: (pkg: string) => void }) {
                 <div><dt>Total duration</dt><dd>3 hours</dd></div>
                 <div><dt>Photoshoot</dt><dd>1.5 hours · Ancient Town</dd></div>
                 <div><dt>Accessories</dt><dd>Unlimited studio selection</dd></div>
-                <div><dt>Photographs</dt><dd>All raw + {pkg.title === "Solo Package" ? "25" : "30"} professionally edited</dd></div>
+                <div><dt>Photographs</dt><dd>All raw + {pkg.edited} professionally edited</dd></div>
               </dl>
               <button onClick={() => onBook(pkg.title)}>Book {pkg.title.replace(" Package", "")} <Arrow /></button>
             </article>
@@ -2620,7 +2705,7 @@ function DestinationShowcase({
       <div className="album-page-grid">
         {albums.map((album, index) => (
           <a
-            href={`/albums/${album.title.toLowerCase().replaceAll(" ", "-")}`}
+            href={`/albums/${album.slug || album.title.toLowerCase().replaceAll(" ", "-")}`}
             className={`album-page-card album-page-${index + 1}`}
             key={album.title}
           >
@@ -2842,19 +2927,31 @@ const sharedPhotoshootDetails = [
 
 function PackageDetailPage({ slug }: { slug: string }) {
   const details = packagePageData[slug];
+  const { services, albums } = useCms();
   const [active, setActive] = useState(0);
   const touchX = useRef<number | null>(null);
   const category = details.title.replace(" Package", "");
-  const categorySlides = category === "Solo" ? clientAlbumSets.solo : category === "Couple" ? clientAlbumSets.couple : category === "Family" ? clientAlbumSets.family : clientAlbumSets.group;
-  const slides = categorySlides.map((image, index) => ({ image, title: `${details.title} in Hội An · ${index + 1}` }));
+  const key = category === "Friend Group" || category === "Group" ? "group" : category.toLowerCase();
+  const managedPackage = services.find((service) => service.slug === `full-combo-${key}`);
+  const managedAlbum = albums.find((album) => album.slug === `package-${key}`);
+  const fallbackSlides = key === "solo" ? clientAlbumSets.solo : key === "couple" ? clientAlbumSets.couple : key === "family" ? clientAlbumSets.family : clientAlbumSets.group;
+  const categorySlides = managedAlbum?.photos?.length
+    ? managedAlbum.photos.map((photo) => ({ image: photo.image, title: photo.alt }))
+    : fallbackSlides.map((image, index) => ({ image, title: `${details.title} in Hội An · ${index + 1}` }));
+  const slides = categorySlides.length
+    ? categorySlides
+    : [{ image: managedAlbum?.image || managedPackage?.image || details.cover, title: details.title }];
+  const displayTitle = managedPackage?.title || details.title;
+  const displayAudience = managedPackage?.copy || details.audience;
+  const displayPrice = managedPackage?.priceLabel || details.price;
   const move = (direction: number) => setActive((current) => (current + direction + slides.length) % slides.length);
 
   return (
     <main className="package-detail-page">
       <section className="package-detail-hero">
         <p>INHERE FULL COMBO · HỘI AN</p>
-        <h1>{details.title}</h1>
-        <span>{details.audience}</span>
+        <h1>{displayTitle}</h1>
+        <span>{displayAudience}</span>
       </section>
       <section className="package-detail-overview" id="package-overview">
         <div className="package-carousel" aria-roledescription="carousel" aria-label={`${details.title} photographs`} onTouchStart={(event) => { touchX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={(event) => { if (touchX.current === null) return; const delta = event.changedTouches[0].clientX - touchX.current; if (Math.abs(delta) > 45) move(delta > 0 ? -1 : 1); touchX.current = null; }}>
@@ -2868,8 +2965,8 @@ function PackageDetailPage({ slug }: { slug: string }) {
         </div>
         <div className="package-detail-copy">
           <p className="eyebrow">PACKAGE DETAILS</p>
-          <h2>{details.title}</h2>
-          <strong className="package-detail-price">{details.price}</strong>
+          <h2>{displayTitle}</h2>
+          <strong className="package-detail-price">{displayPrice}</strong>
           <div className="package-detail-summary">
             <span><small>Total experience</small><b>3 hours</b></span>
             <span><small>Original photographs</small><b>All raw photos</b></span>
@@ -2899,10 +2996,12 @@ function InnerPage({
   path,
   onBook,
   add,
+  lang,
 }: {
   path: string;
   onBook: () => void;
   add: (x: string) => void;
+  lang: Language;
 }) {
   const { services, articles } = useCms();
   const segments = path.split("/").filter(Boolean);
@@ -2924,7 +3023,7 @@ function InnerPage({
   if (type === "faq" && isLanding) return <FaqPoliciesPage />;
   if (type === "portfolio" && isLanding) return <LookbookPage />;
   if ((type === "experiences" || type === "blog") && isLanding) return <JournalIndex />;
-  if ((type === "experiences" || type === "blog") && article) return <JournalArticle article={article} />;
+  if ((type === "experiences" || type === "blog") && article) return <JournalArticle article={article} lang={lang} />;
   const profile = pageProfiles[type] || pageProfiles.services;
   const title =
     article?.title ||
@@ -3060,6 +3159,7 @@ export default function InhereSite({
     const [
       serviceResult,
       albumResult,
+      albumPhotoResult,
       experienceResult,
       articleResult,
       testimonialResult,
@@ -3075,6 +3175,10 @@ export default function InhereSite({
         .from("albums")
         .select("*")
         .eq("is_published", true)
+        .order("sort_order"),
+      supabase
+        .from("album_photos")
+        .select("*")
         .order("sort_order"),
       supabase
         .from("experiences")
@@ -3102,15 +3206,17 @@ export default function InhereSite({
         .eq("is_published", true)
         .order("sort_order"),
     ]);
+    const localized = (english: unknown, vietnamese: unknown) =>
+      String((lang === "vi" ? vietnamese : english) || english || "");
     setCms((current) => ({
       services: serviceResult.data?.length
         ? [
             ...serviceResult.data.map((row, index) => ({
               id: String(index + 1).padStart(2, "0"),
               slug: row.slug,
-              title: row.title_en,
+              title: localized(row.title_en, row.title_vi),
               image: row.image_url || images.solo,
-              copy: row.description_en,
+              copy: localized(row.description_en, row.description_vi),
               priceLabel: row.price_label || undefined,
               inclusions: Array.isArray(row.inclusions)
                 ? row.inclusions.map(String)
@@ -3124,15 +3230,25 @@ export default function InhereSite({
       albums: albumResult.data?.length
         ? albumResult.data.map((row, index) => ({
             n: String(index + 1).padStart(2, "0"),
-            title: row.title_en,
-            meta: row.category_en,
+            id: row.id,
+            slug: row.slug,
+            title: localized(row.title_en, row.title_vi),
+            meta: localized(row.category_en, row.category_vi),
             image: row.cover_image || images.couple,
+            photos: (albumPhotoResult.data || [])
+              .filter((photo) => photo.album_id === row.id)
+              .map((photo) => ({
+                id: photo.id,
+                image: photo.image_url,
+                alt: localized(photo.alt_en, photo.alt_vi) || localized(row.title_en, row.title_vi),
+                sortOrder: photo.sort_order,
+              })),
           }))
         : current.albums,
       experiences: experienceResult.data?.length
         ? experienceResult.data.map((row) => ({
-            title: row.title_en,
-            cat: row.category_en,
+            title: localized(row.title_en, row.title_vi),
+            cat: localized(row.category_en, row.category_vi),
             image: row.image_url || images.lantern,
             duration: row.duration_label || "Details to be confirmed",
           }))
@@ -3140,20 +3256,32 @@ export default function InhereSite({
       articles: articleResult.data?.length
         ? articleResult.data.map((row) => ({
             slug: row.slug,
-            title: row.title_en,
-            cat: row.category_en,
+            title: localized(row.title_en, row.title_vi),
+            cat: localized(row.category_en, row.category_vi),
             image: row.cover_image || images.oldtown,
-            excerpt: row.excerpt_en,
-            content: row.content_en,
+            excerpt: localized(row.excerpt_en, row.excerpt_vi),
+            content: localized(row.content_en, row.content_vi),
+            sections: [1, 2, 3]
+              .map((number) => ({
+                heading: localized(
+                  row[`section_${number}_heading_en`],
+                  row[`section_${number}_heading_vi`],
+                ),
+                body: localized(
+                  row[`section_${number}_body_en`],
+                  row[`section_${number}_body_vi`],
+                ),
+              }))
+              .filter((section) => section.heading && section.body),
             date: row.published_at,
           }))
         : current.articles,
       testimonials:
         testimonialResult.data?.map((row) => ({
           id: row.id,
-          quote: row.quote_en,
+          quote: localized(row.quote_en, row.quote_vi),
           authorName: row.author_name,
-          authorTitle: row.author_title_en,
+          authorTitle: localized(row.author_title_en, row.author_title_vi),
           avatarUrl: row.avatar_url || logo,
           rating: row.rating,
         })) || current.testimonials,
@@ -3169,16 +3297,25 @@ export default function InhereSite({
           instagramUrl: row.instagram_url || "https://www.instagram.com/",
         })) || current.reels,
       pages: Object.fromEntries(
-        (pageResult.data || []).map((row) => [row.page_key, row as CmsPage]),
+        (pageResult.data || []).map((row) => [
+          row.page_key,
+          {
+            ...row,
+            title_en: localized(row.title_en, row.title_vi),
+            subtitle_en: localized(row.subtitle_en, row.subtitle_vi),
+            body_en: localized(row.body_en, row.body_vi),
+          } as CmsPage,
+        ]),
       ),
     }));
-  }, []);
+  }, [lang]);
   useEffect(() => {
     void loadCms();
     const channel = supabase.channel("inhere-live-content");
     [
       "services",
       "albums",
+      "album_photos",
       "experiences",
       "blog_posts",
       "testimonials",
@@ -3330,6 +3467,7 @@ export default function InhereSite({
             path={routePath}
             onBook={() => setBooking(true)}
             add={add}
+            lang={lang}
           />
         )}
         <Footer onBook={() => setBooking(true)} />

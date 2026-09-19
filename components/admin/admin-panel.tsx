@@ -356,8 +356,8 @@ const sections: Section[] = [
   },
   {
     table: "services",
-    label: "Photoshoots",
-    description: "Photography services, package labels and inclusions.",
+    label: "Package Covers & Details",
+    description: "Edit the Solo, Couple, Family and Group cards. The Main image is the package cover shown on the website.",
     titleKey: "title_en",
     order: "sort_order",
     defaults: {
@@ -399,8 +399,8 @@ const sections: Section[] = [
   },
   {
     table: "albums",
-    label: "Albums / Lookbook",
-    description: "Album covers and Lookbook categories. Use the exact English portfolio filter category names.",
+    label: "Galleries & Lookbook Covers",
+    description: "Create each gallery here first. Package Gallery albums control package sliders; other albums appear in the Lookbook.",
     titleKey: "title_en",
     order: "sort_order",
     defaults: {
@@ -438,8 +438,8 @@ const sections: Section[] = [
   },
   {
     table: "album_photos",
-    label: "Album Photos",
-    description: "Upload and arrange individual photos inside albums.",
+    label: "Gallery Photos",
+    description: "Choose a gallery, upload its individual photos, and set their display order. These images power package sliders and Lookbook lightboxes.",
     titleKey: "alt_en",
     order: "sort_order",
     defaults: {
@@ -471,6 +471,18 @@ const sections: Section[] = [
       excerpt_vi: "",
       content_en: "",
       content_vi: "",
+      section_1_heading_en: "",
+      section_1_heading_vi: "",
+      section_1_body_en: "",
+      section_1_body_vi: "",
+      section_2_heading_en: "",
+      section_2_heading_vi: "",
+      section_2_body_en: "",
+      section_2_body_vi: "",
+      section_3_heading_en: "",
+      section_3_heading_vi: "",
+      section_3_body_en: "",
+      section_3_body_vi: "",
       category_en: "",
       category_vi: "",
       cover_image: "",
@@ -485,8 +497,18 @@ const sections: Section[] = [
       { key: "category_vi", label: "Category — Vietnamese" },
       { key: "excerpt_en", label: "Excerpt / SEO Meta Description — English", type: "textarea" },
       { key: "excerpt_vi", label: "Excerpt / SEO Meta Description — Vietnamese", type: "textarea" },
-      { key: "content_en", label: "Article — English", type: "article" },
-      { key: "content_vi", label: "Article — Vietnamese", type: "article" },
+      { key: "section_1_heading_en", label: "Section 1 heading — English" },
+      { key: "section_1_heading_vi", label: "Section 1 heading — Vietnamese" },
+      { key: "section_1_body_en", label: "Section 1 content — English", type: "article" },
+      { key: "section_1_body_vi", label: "Section 1 content — Vietnamese", type: "article" },
+      { key: "section_2_heading_en", label: "Section 2 heading — English" },
+      { key: "section_2_heading_vi", label: "Section 2 heading — Vietnamese" },
+      { key: "section_2_body_en", label: "Section 2 content — English", type: "article" },
+      { key: "section_2_body_vi", label: "Section 2 content — Vietnamese", type: "article" },
+      { key: "section_3_heading_en", label: "Section 3 heading — English" },
+      { key: "section_3_heading_vi", label: "Section 3 heading — Vietnamese" },
+      { key: "section_3_body_en", label: "Section 3 content — English", type: "article" },
+      { key: "section_3_body_vi", label: "Section 3 content — Vietnamese", type: "article" },
       { key: "cover_image", label: "Cover image", type: "image" },
       {
         key: "status",
@@ -661,6 +683,7 @@ export default function AdminPanel() {
   const [active, setActive] = useState(sections[0].table);
   const [rows, setRows] = useState<Row[]>([]);
   const [albums, setAlbums] = useState<Row[]>([]);
+  const [albumFilter, setAlbumFilter] = useState("");
   const [editing, setEditing] = useState<Row | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -725,6 +748,8 @@ export default function AdminPanel() {
     }
     const sourceTable = section.sourceTable || active;
     let query = supabase.from(sourceTable).select("*");
+    if (active === "album_photos" && albumFilter)
+      query = query.eq("album_id", albumFilter);
     if (section.filterPrefix) query = query.like("page_key", `${section.filterPrefix}%`);
     if (active === "faq_content") query = query.like("page_key", "faq-%").not("page_key", "like", "faq-price-%");
     if (active === "page_content") query = query
@@ -805,7 +830,7 @@ export default function AdminPanel() {
         setRows(records);
       } else setRows(records);
     }
-  }, [active, section.order, section.filterPrefix, section.sourceTable, section.templateGroup, section.templates]);
+  }, [active, albumFilter, section.order, section.filterPrefix, section.sourceTable, section.templateGroup, section.templates]);
   useEffect(() => {
     if (!isAdmin) return;
     void loadRows();
@@ -919,7 +944,7 @@ export default function AdminPanel() {
   const upload = async (file: File, field: string) => {
     setLoading(true);
     const safe = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-");
-    const path = `cms/${Date.now()}-${safe}`;
+    const path = `cms/${crypto.randomUUID()}-${safe}`;
     const { error } = await supabase.storage
       .from("inhere-media")
       .upload(path, file, { upsert: false });
@@ -937,7 +962,7 @@ export default function AdminPanel() {
   const uploadArticleImage = async (file: File, field: string) => {
     setLoading(true);
     const safe = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-");
-    const path = `cms/${Date.now()}-${safe}`;
+    const path = `cms/${crypto.randomUUID()}-${safe}`;
     const { error } = await supabase.storage.from("inhere-media").upload(path, file, { upsert: false });
     if (error) {
       setMessage(error.message);
@@ -948,6 +973,53 @@ export default function AdminPanel() {
     setEditing((current) => current ? { ...current, [field]: `${String(current[field] || "").trim()}\n\n![Describe this photograph](${url})\n\n` } : current);
     setLoading(false);
     setMessage("Image inserted into the article. Replace the caption text if needed.");
+    await loadMedia();
+  };
+  const uploadGalleryPhotos = async (files: FileList) => {
+    const albumId = String(editing?.album_id || "");
+    if (!albumId) {
+      setMessage("Choose a gallery before selecting multiple photos.");
+      return;
+    }
+    setLoading(true);
+    const { data: existing } = await supabase
+      .from("album_photos")
+      .select("sort_order")
+      .eq("album_id", albumId)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+    const startingOrder = Number(existing?.[0]?.sort_order || 0) + 1;
+    const rows: Row[] = [];
+    for (const [index, file] of Array.from(files).entries()) {
+      const safe = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-");
+      const path = `cms/${crypto.randomUUID()}-${index}-${safe}`;
+      const { error } = await supabase.storage
+        .from("inhere-media")
+        .upload(path, file, { upsert: false });
+      if (error) {
+        setMessage(`Upload stopped: ${error.message}`);
+        setLoading(false);
+        return;
+      }
+      const imageUrl = supabase.storage.from("inhere-media").getPublicUrl(path)
+        .data.publicUrl;
+      rows.push({
+        album_id: albumId,
+        image_url: imageUrl,
+        alt_en: file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "),
+        alt_vi: "",
+        sort_order: startingOrder + index,
+      });
+    }
+    const { error } = await supabase.from("album_photos").insert(rows);
+    setLoading(false);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setMessage(`${rows.length} gallery photos uploaded. The live gallery will update automatically.`);
+    setEditing(null);
+    await loadRows();
     await loadMedia();
   };
   const openAccount = () => {
@@ -1065,6 +1137,7 @@ export default function AdminPanel() {
               className={active === item.table ? "active" : ""}
               onClick={() => {
                 setActive(item.table);
+                setAlbumFilter("");
                 setEditing(null);
                 setMessage("");
               }}
@@ -1105,6 +1178,19 @@ export default function AdminPanel() {
         )}
         <div className="admin-table-head">
           <span>{rows.length} items</span>
+          {active === "album_photos" && (
+            <label>
+              Gallery
+              <select value={albumFilter} onChange={(event) => setAlbumFilter(event.target.value)}>
+                <option value="">All galleries</option>
+                {albums.map((album) => (
+                  <option key={String(album.id)} value={String(album.id)}>
+                    {String(album.title_en)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button onClick={() => void loadRows()}>Refresh ↻</button>
         </div>
         <div className="admin-list">
@@ -1397,11 +1483,17 @@ export default function AdminPanel() {
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp,image/avif"
+                        multiple={active === "album_photos"}
                         onChange={(e) =>
-                          e.target.files?.[0] &&
-                          void upload(e.target.files[0], field.key)
+                          e.target.files?.length &&
+                          (active === "album_photos" && e.target.files.length > 1
+                            ? void uploadGalleryPhotos(e.target.files)
+                            : void upload(e.target.files[0], field.key))
                         }
                       />
+                      {active === "album_photos" && (
+                        <small>Select several images together to upload a complete gallery in one step.</small>
+                      )}
                     </div>
                   ) : (
                     <input
