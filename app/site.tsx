@@ -7,7 +7,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -977,7 +976,7 @@ function Process() {
   );
 }
 
-function Experiences({ add }: { add: (x: string) => void }) {
+function Experiences({ onBook }: { onBook: () => void }) {
   const { experiences } = useCms();
   return (
     <section className="section experience">
@@ -1012,7 +1011,7 @@ function Experiences({ add }: { add: (x: string) => void }) {
               >
                 View Experience <Arrow />
               </a>
-              <button onClick={() => add(x.title)}>+ Add to plan</button>
+              <button onClick={onBook}>Book</button>
             </div>
           </article>
         ))}
@@ -1738,8 +1737,30 @@ function Booking({
   );
 }
 
-function Footer({ onBook }: { onBook: () => void }) {
+function Footer({ onBook, lang }: { onBook: () => void; lang: Language }) {
   const { pages } = useCms();
+  const vi = lang === "vi";
+  const text = vi ? {
+    ctaEye: "CÙNG TẠO NÊN NHỮNG KHOẢNH KHẮC ĐẸP", ctaTitle: "Câu chuyện Hội An của bạn bắt đầu từ đây.", book: "Đặt lịch trải nghiệm",
+    brand: "Nhiếp ảnh cao cấp, phong cách Việt và những trải nghiệm văn hóa được tuyển chọn tại Hội An.", connect: "KẾT NỐI & LIÊN HỆ",
+    phone: "Điện thoại / Hotline", status: "HIỆN ĐANG NHẬN ĐẶT LỊCH", direct: "ĐẶT LỊCH TRỰC TIẾP", formTitle: "Đặt lịch trải nghiệm",
+    name: "Họ và tên", namePlaceholder: "Nhập họ và tên", contact: "WhatsApp / Liên kết mạng xã hội",
+    contactPlaceholder: "Số điện thoại, tên người dùng hoặc liên kết hồ sơ", date: "Ngày dự kiến", service: "Dịch vụ quan tâm",
+    time: "Giờ chụp ảnh", timeHelp: "Bạn muốn bắt đầu chụp lúc mấy giờ? Vui lòng đến sớm 90 phút để trang điểm và chọn trang phục.",
+    participants: "Số người tham gia", women: "Số khách nữ cần trang điểm", notes: "Ghi chú thêm",
+    notesPlaceholder: "Hãy cho chúng tôi biết về nhóm hoặc yêu cầu đặc biệt của bạn", sending: "Đang gửi yêu cầu…", send: "Gửi yêu cầu đặt lịch",
+    warning: "Lưu ý: Vui lòng nhập thông tin liên hệ chính xác để chúng tôi có thể tư vấn và xác nhận đặt lịch. Nếu thông tin liên hệ không chính xác hoặc bị thiếu, chúng tôi sẽ không thể xác nhận lịch của bạn.",
+    rights: "© 2026 INHERE. Bảo lưu mọi quyền.", top: "Lên đầu trang ↑",
+  } : {
+    ctaEye: "LET’S CREATE SOMETHING BEAUTIFUL", ctaTitle: "Your Hội An story starts here.", book: "Book Your Experience",
+    brand: "Premium photography, Vietnamese styling and curated cultural experiences in Hội An.", connect: "CONNECT & CONTACT",
+    phone: "Phone / Hotline", status: "CURRENTLY ACCEPTING BOOKINGS", direct: "DIRECT BOOKING", formTitle: "Book Your Experience",
+    name: "Name", namePlaceholder: "Your full name", contact: "WhatsApp / Social App link", contactPlaceholder: "Number, username or profile link",
+    date: "Expected Date", service: "Service of Interest", time: "Photoshoot Time", timeHelp: bookingTimeHelp,
+    participants: "Number of participants", women: "Number of women needing makeup", notes: "Additional Notes",
+    notesPlaceholder: "Tell us about your group or special requests", sending: "Sending your request…", send: "Send Booking Request",
+    warning: bookingContactWarning, rights: "© 2026 INHERE. All rights reserved.", top: "Back to top ↑",
+  };
   const footerCta = pages["footer-cta"];
   const footerBrand = pages["footer-brand"];
   const footerContact = pages["footer-contact"];
@@ -1785,7 +1806,9 @@ function Footer({ onBook }: { onBook: () => void }) {
       const { error } = await supabase.from("booking_requests").insert(booking);
       if (error) {
         setBookingMessage(
-          "We couldn't send your request. Please contact us on WhatsApp.",
+          vi
+            ? "Không thể gửi yêu cầu. Vui lòng liên hệ với chúng tôi qua WhatsApp."
+            : "We couldn't send your request. Please contact us on WhatsApp.",
         );
         return;
       }
@@ -1798,7 +1821,9 @@ function Footer({ onBook }: { onBook: () => void }) {
       setParticipants("1");
       setWomen("0");
       setNotes("");
-      setBookingMessage(emailSent ? "Thank you — your booking request has been received." : bookingEmailWarning);
+      setBookingMessage(emailSent
+        ? (vi ? "Cảm ơn bạn — yêu cầu đặt lịch đã được tiếp nhận." : "Thank you — your booking request has been received.")
+        : (vi ? "Yêu cầu đã được lưu nhưng email thông báo chưa gửi được. Vui lòng nhắn WhatsApp để xác nhận." : bookingEmailWarning));
     } finally {
       submitLock.current = false;
       setSubmitting(false);
@@ -1813,12 +1838,12 @@ function Footer({ onBook }: { onBook: () => void }) {
         <div className="footer-orbit" aria-hidden="true">
           ✦
         </div>
-        <p className="eyebrow light">{footerCta?.body_en || "LET’S CREATE SOMETHING BEAUTIFUL"}</p>
+        <p className="eyebrow light">{(vi ? footerCta?.body_vi : footerCta?.body_en) || text.ctaEye}</p>
         <h2>
-          {footerCta?.title_en || "Your Hội An story starts here."}
+          {(vi ? footerCta?.title_vi : footerCta?.title_en) || text.ctaTitle}
         </h2>
         <button className="button ivory" onClick={onBook}>
-          {footerCta?.subtitle_en || "Book Your Experience"} <Arrow />
+          {(vi ? footerCta?.subtitle_vi : footerCta?.subtitle_en) || text.book} <Arrow />
         </button>
       </div>
       <div className="footer-main">
@@ -1827,7 +1852,7 @@ function Footer({ onBook }: { onBook: () => void }) {
             <img src={logo} alt="INHERE Ao Dai, makeup and photoshoot" />
           </div>
           <p>
-            {footerBrand?.title_en || "Premium photography, Vietnamese styling and curated cultural experiences in Hội An."}
+            {(vi ? footerBrand?.title_vi : footerBrand?.title_en) || text.brand}
           </p>
           <iframe
             className="footer-map"
@@ -1838,13 +1863,13 @@ function Footer({ onBook }: { onBook: () => void }) {
           />
         </div>
         <div className="footer-connect">
-          <p className="eyebrow light">CONNECT &amp; CONTACT</p>
+          <p className="eyebrow light">{text.connect}</p>
           <a
             className="footer-address"
             href="https://www.google.com/maps/search/?api=1&query=24%20%C4%90%C3%A0o%20Duy%20T%E1%BB%AB%2C%20H%E1%BB%99i%20An"
             target="_blank"
           >
-            <FaLocationDot /> {footerContact?.title_en || "24 Đào Duy Từ, Hội An"}
+            <FaLocationDot /> {(vi ? footerContact?.title_vi : footerContact?.title_en) || "24 Đào Duy Từ, Hội An"}
           </a>
           <div className="footer-contact-list">
             <a href="tel:+84898199099">
@@ -1852,8 +1877,8 @@ function Footer({ onBook }: { onBook: () => void }) {
                 <FaPhone />
               </span>
               <span className="footer-channel-copy">
-                <small>Phone / Hotline</small>
-                <b>{footerContact?.subtitle_en || "+84 898 199 099"}</b>
+                <small>{text.phone}</small>
+                <b>{(vi ? footerContact?.subtitle_vi : footerContact?.subtitle_en) || "+84 898 199 099"}</b>
               </span>
             </a>
             <a href={WA} target="_blank">
@@ -1917,33 +1942,33 @@ function Footer({ onBook }: { onBook: () => void }) {
             </a>
           </div>
           <span className="footer-status">
-            <i /> Currently accepting bookings
+            <i /> {text.status}
           </span>
         </div>
         <div className="footer-booking" id="footer-booking-form">
-          <p className="eyebrow light">DIRECT BOOKING</p>
-          <h3>Book Your Experience</h3>
+          <p className="eyebrow light">{text.direct}</p>
+          <h3>{text.formTitle}</h3>
           <form onSubmit={submitBooking}>
             <label>
-              Name
+              {text.name}
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                placeholder="Your full name"
+                placeholder={text.namePlaceholder}
               />
             </label>
             <label>
-              WhatsApp / Social App link
+              {text.contact}
               <input
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 required
-                placeholder="Number, username or profile link"
+                placeholder={text.contactPlaceholder}
               />
             </label>
             <label>
-              Expected Date
+              {text.date}
               <input
                 type="date"
                 value={date}
@@ -1952,43 +1977,43 @@ function Footer({ onBook }: { onBook: () => void }) {
               />
             </label>
             <label>
-              Service of Interest
+              {text.service}
               <select
                 value={service}
                 onChange={(e) => setService(e.target.value)}
               >
                 {[
-                  "Rental Ao Dai",
-                  "Full Combo",
-                  "Solo",
-                  "Couple",
-                  "Family",
-                  "Group",
-                ].map((option) => (
-                  <option key={option}>{option}</option>
+                  ["Rental Ao Dai", vi ? "Thuê Áo Dài" : "Rental Ao Dai"],
+                  ["Full Combo", vi ? "Gói trọn gói" : "Full Combo"],
+                  ["Solo", vi ? "Cá nhân" : "Solo"],
+                  ["Couple", vi ? "Cặp đôi" : "Couple"],
+                  ["Family", vi ? "Gia đình" : "Family"],
+                  ["Group", vi ? "Nhóm bạn" : "Group"],
+                ].map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </label>
             <label>
-              Photoshoot Time
+              {text.time}
               <input type="time" value={shootTime} onChange={(e) => setShootTime(e.target.value)} />
-              <span className="booking-field-help">{bookingTimeHelp}</span>
+              <span className="booking-field-help">{text.timeHelp}</span>
             </label>
             <label>
-              Number of participants
+              {text.participants}
               <input type="number" min="1" required value={participants} onChange={(e) => setParticipants(e.target.value)} />
             </label>
             <label>
-              Number of women needing makeup
+              {text.women}
               <input type="number" min="0" max={participants || undefined} required value={women} onChange={(e) => setWomen(e.target.value)} />
             </label>
             <label>
-              Additional Notes
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Tell us about your group or special requests" rows={3} />
+              {text.notes}
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={text.notesPlaceholder} rows={3} />
             </label>
             <button type="submit" disabled={submitting}>
               {submitting && <span className="booking-spinner" aria-hidden="true" />}
-              <span>{submitting ? "Sending your request…" : "Send Booking Request"}</span>
+              <span>{submitting ? text.sending : text.send}</span>
               {!submitting && <Arrow />}
             </button>
             {bookingMessage && (
@@ -1996,14 +2021,14 @@ function Footer({ onBook }: { onBook: () => void }) {
                 {bookingMessage}
               </p>
             )}
-            <p className="booking-contact-warning">{bookingContactWarning}</p>
+            <p className="booking-contact-warning">{text.warning}</p>
           </form>
         </div>
       </div>
       <div className="footer-bottom">
-        <span>© 2026 INHERE. All rights reserved.</span>
+        <span>{text.rights}</span>
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          Back to top ↑
+          {text.top}
         </button>
         <span>AO DAI · MAKEUP · PHOTOSHOOT</span>
       </div>
@@ -2671,11 +2696,9 @@ function OutfitRentalPage() {
 function DestinationShowcase({
   type,
   onBook,
-  add,
 }: {
   type: string;
   onBook: () => void;
-  add: (x: string) => void;
 }) {
   const { services, albums, experiences, articles } = useCms();
   if (type === "services")
@@ -2768,7 +2791,7 @@ function DestinationShowcase({
               >
                 Explore <Arrow />
               </a>
-              <button onClick={() => add(item.title)}>+ Add to plan</button>
+              <button onClick={onBook}>Book</button>
             </div>
           </article>
         ))}
@@ -2925,7 +2948,7 @@ const sharedPhotoshootDetails = [
   "The package price already includes the outfit, makeup, hairstyling, and photoshoot. You are free to choose any outfit you like from our collection, with no restrictions.",
 ];
 
-function PackageDetailPage({ slug }: { slug: string }) {
+function PackageDetailPage({ slug, lang }: { slug: string; lang: Language }) {
   const details = packagePageData[slug];
   const { services, albums } = useCms();
   const [active, setActive] = useState(0);
@@ -2941,9 +2964,42 @@ function PackageDetailPage({ slug }: { slug: string }) {
   const slides = categorySlides.length
     ? categorySlides
     : [{ image: managedAlbum?.image || managedPackage?.image || details.cover, title: details.title }];
-  const displayTitle = managedPackage?.title || details.title;
-  const displayAudience = managedPackage?.copy || details.audience;
+  const managedTitle = managedPackage?.title || details.title;
+  const managedAudience = managedPackage?.copy || details.audience;
   const displayPrice = managedPackage?.priceLabel || details.price;
+  const vi = lang === "vi";
+  const titleVi: Record<string, string> = { solo: "Gói cá nhân", couple: "Gói cặp đôi", family: "Gói gia đình", group: "Gói nhóm bạn" };
+  const audienceVi: Record<string, string> = {
+    solo: "Trải nghiệm Áo Dài, trang điểm và chụp ảnh trọn vẹn dành cho một khách.",
+    couple: "Trải nghiệm Hội An dành cho hai người, với trang phục phối hợp và trang điểm cho một khách nữ.",
+    family: "Gói cơ bản cho ba người, bao gồm trang điểm cho mẹ.",
+    group: "Trải nghiệm chụp ảnh Full Combo vui tươi dành cho nhóm bốn người.",
+  };
+  const displayTitle = vi && managedTitle === details.title ? titleVi[key] : managedTitle;
+  const displayAudience = vi && managedAudience === details.audience ? audienceVi[key] : managedAudience;
+  const displayNote = vi && details.note
+    ? (key === "family"
+        ? "Có phụ phí cho thành viên gia đình bổ sung và trang điểm thêm. Vui lòng đặt trước nếu cần thêm dịch vụ trang điểm."
+        : "Có phụ phí cho người tham gia và dịch vụ trang điểm bổ sung, tùy theo số lượng nam và nữ.")
+    : details.note;
+  const ui = vi ? {
+    details: "CHI TIẾT GÓI", total: "Tổng thời gian", hours: "3 giờ", originals: "Ảnh gốc", allRaw: "Toàn bộ ảnh gốc",
+    edits: "Ảnh chỉnh sửa chuyên nghiệp", edited: `${details.edited} ảnh đã chỉnh sửa`, applies: "ÁP DỤNG CHO GÓI NÀY",
+    shared: "Thông tin buổi chụp chung", book: "Đặt gói", previous: "Ảnh trước", next: "Ảnh tiếp theo",
+  } : {
+    details: "PACKAGE DETAILS", total: "Total experience", hours: "3 hours", originals: "Original photographs", allRaw: "All raw photos",
+    edits: "Professional edits", edited: `${details.edited} edited photos`, applies: "APPLIES TO THIS PACKAGE",
+    shared: "Shared Photoshoot Details", book: "Book", previous: "Previous package photograph", next: "Next package photograph",
+  };
+  const sharedDetailsVi = [
+    "Buổi chụp kéo dài khoảng 90 phút và đi qua nhiều địa điểm nổi tiếng của Hội An, gồm Chùa Cầu, đường hoa giấy, phố đèn lồng, những con hẻm tường vàng và các góc đẹp khác trong Phố Cổ.",
+    "Nếu bạn muốn chụp tại quán cà phê sân thượng với tầm nhìn toàn cảnh Hội An, chúng tôi cũng có thể đưa địa điểm này vào lịch trình. Bạn chỉ cần mua một đồ uống để vào quán và chụp ảnh.",
+    "Trên đường đi, nếu phát hiện thêm địa điểm đẹp, chúng ta có thể dừng lại để chụp thêm ảnh.",
+    "Nhiếp ảnh gia của chúng tôi là người địa phương, am hiểu những góc chụp đẹp nhất tại Hội An và sẽ hướng dẫn bạn tạo dáng trong suốt buổi chụp.",
+    `Không giới hạn số lượng ảnh chụp. Toàn bộ ảnh gốc sẽ được gửi qua Google Drive trong ngày. Sau khi xem ảnh, bạn có thể chọn ${details.edited} ảnh yêu thích để chỉnh sửa chuyên nghiệp.`,
+    "Tùy lượng khách tại từng địa điểm, chúng tôi sẵn sàng kéo dài thời gian chụp khi cần để bạn có thể ghé nhiều góc đẹp và hài lòng với trải nghiệm.",
+    "Giá gói đã bao gồm trang phục, trang điểm, làm tóc và chụp ảnh. Bạn có thể tự do chọn bất kỳ trang phục nào trong bộ sưu tập của chúng tôi.",
+  ];
   const move = (direction: number) => setActive((current) => (current + direction + slides.length) % slides.length);
 
   return (
@@ -2958,27 +3014,27 @@ function PackageDetailPage({ slug }: { slug: string }) {
           <img className="package-carousel-backdrop" src={slides[active].image} alt="" aria-hidden="true" />
           <img className="package-carousel-image" src={slides[active].image} alt={slides[active].title} />
           <div className="package-carousel-controls">
-            <button onClick={() => move(-1)} aria-label="Previous package photograph">←</button>
+            <button onClick={() => move(-1)} aria-label={ui.previous}>←</button>
             <span>{String(active + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}</span>
-            <button onClick={() => move(1)} aria-label="Next package photograph">→</button>
+            <button onClick={() => move(1)} aria-label={ui.next}>→</button>
           </div>
         </div>
         <div className="package-detail-copy">
-          <p className="eyebrow">PACKAGE DETAILS</p>
+          <p className="eyebrow">{ui.details}</p>
           <h2>{displayTitle}</h2>
           <strong className="package-detail-price">{displayPrice}</strong>
           <div className="package-detail-summary">
-            <span><small>Total experience</small><b>3 hours</b></span>
-            <span><small>Original photographs</small><b>All raw photos</b></span>
-            <span><small>Professional edits</small><b>{details.edited} edited photos</b></span>
+            <span><small>{ui.total}</small><b>{ui.hours}</b></span>
+            <span><small>{ui.originals}</small><b>{ui.allRaw}</b></span>
+            <span><small>{ui.edits}</small><b>{ui.edited}</b></span>
           </div>
-          {details.note && <p className="package-surcharge-note">{details.note}</p>}
-          <a className="package-detail-cta" href="#footer-booking-form">Book {category} Package <Arrow /></a>
+          {displayNote && <p className="package-surcharge-note">{displayNote}</p>}
+          <a className="package-detail-cta" href="#footer-booking-form">{ui.book} {displayTitle} <Arrow /></a>
         </div>
       </section>
       <section className="package-shared-details">
-        <header><p>APPLIES TO THIS PACKAGE</p><h2>Shared Photoshoot Details</h2></header>
-        <ol>{sharedPhotoshootDetails.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item.replace("{edited}", String(details.edited))}</p></li>)}</ol>
+        <header><p>{ui.applies}</p><h2>{ui.shared}</h2></header>
+        <ol>{(vi ? sharedDetailsVi : sharedPhotoshootDetails).map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item.replace("{edited}", String(details.edited))}</p></li>)}</ol>
       </section>
     </main>
   );
@@ -2995,12 +3051,10 @@ function HomeFinalCta({ onBook }: { onBook: () => void }) {
 function InnerPage({
   path,
   onBook,
-  add,
   lang,
 }: {
   path: string;
   onBook: () => void;
-  add: (x: string) => void;
   lang: Language;
 }) {
   const { services, articles } = useCms();
@@ -3078,7 +3132,7 @@ function InnerPage({
           {article?.excerpt || service?.copy || profile.lead}
         </p>
         {isLanding ? (
-          <DestinationShowcase type={type} onBook={onBook} add={add} />
+          <DestinationShowcase type={type} onBook={onBook} />
         ) : article ? (
           <div className="article-body">
             <h3>Finding your perfect Hội An setting</h3>
@@ -3125,9 +3179,6 @@ function InnerPage({
           <button className="button dark-button" onClick={onBook}>
             Request Package Details <Arrow />
           </button>
-          <button className="button outline" onClick={() => add(title)}>
-            + Add to My Hội An Plan
-          </button>
         </div>
       </section>
       {!isLanding && <Blog />}
@@ -3142,8 +3193,6 @@ export default function InhereSite({
 }) {
   const [booking, setBooking] = useState(false);
   const [bookingPreset, setBookingPreset] = useState<string>();
-  const [plan, setPlan] = useState<string[]>([]);
-  const [showPlan, setShowPlan] = useState(false);
   const [lang, setLang] = useState<Language>("en");
   const [path, setPath] = useState(initialPath);
   const [cms, setCms] = useState<CmsState>({
@@ -3416,17 +3465,6 @@ export default function InhereSite({
     });
     return () => window.cancelAnimationFrame(frame);
   }, [home]);
-  const add = (x: string) => {
-    setPlan((p) => (p.includes(x) ? p : [...p, x]));
-    setShowPlan(true);
-  };
-  const message = useMemo(
-    () =>
-      encodeURIComponent(
-        `Hello INHERE, I would like to ask about my Hội An plan:\n${plan.map((x) => `• ${x}`).join("\n")}`,
-      ),
-    [plan],
-  );
   if (path.startsWith("/admin")) return <AdminPanel />;
   return (
     <CmsContext.Provider value={cms}>
@@ -3452,7 +3490,7 @@ export default function InhereSite({
             <HomeFinalCta onBook={() => setBooking(true)} />
           </main>
         ) : packagePageData[routePath.split("/").filter(Boolean).at(-1) || ""] ? (
-          <PackageDetailPage slug={routePath.split("/").filter(Boolean).at(-1) || ""} />
+          <PackageDetailPage slug={routePath.split("/").filter(Boolean).at(-1) || ""} lang={lang} />
         ) : routePath === "/services/outfit-rental" || routePath === "/rentals/outfits" ? (
           <OutfitRentalPage />
         ) : routePath === "/services" || routePath === "/rentals" || routePath === "/albums" ? (
@@ -3466,51 +3504,10 @@ export default function InhereSite({
           <InnerPage
             path={routePath}
             onBook={() => setBooking(true)}
-            add={add}
             lang={lang}
           />
         )}
-        <Footer onBook={() => setBooking(true)} />
-        <div className={`plan-panel ${showPlan ? "open" : ""}`}>
-          <button className="plan-close" onClick={() => setShowPlan(false)}>
-            Close ×
-          </button>
-          <p className="eyebrow">YOUR CURATED VISIT</p>
-          <h2>
-            My Hội An <em>Plan</em>
-          </h2>
-          {plan.length ? (
-            plan.map((x) => (
-              <div className="plan-item" key={x}>
-                <span>{x}</span>
-                <button
-                  onClick={() => setPlan((p) => p.filter((y) => y !== x))}
-                >
-                  Remove
-                </button>
-              </div>
-            ))
-          ) : (
-            <p className="empty">
-              Add a photoshoot, styling detail or local experience to build your
-              inquiry.
-            </p>
-          )}
-          <a
-            className={`button dark-button ${!plan.length ? "disabled" : ""}`}
-            href={plan.length ? `${WA}?text=${message}` : "#"}
-            target={plan.length ? "_blank" : undefined}
-          >
-            Send Complete Inquiry <Arrow />
-          </a>
-        </div>
-        {showPlan && (
-          <button
-            aria-label="Close plan"
-            className="plan-backdrop"
-            onClick={() => setShowPlan(false)}
-          />
-        )}
+        <Footer onBook={() => setBooking(true)} lang={lang} />
         <Booking
           open={booking}
           close={() => {

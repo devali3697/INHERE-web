@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element, react-hooks/set-state-in-effect */
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
@@ -692,6 +692,7 @@ export default function AdminPanel() {
   const [accountEmail, setAccountEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const loadRequest = useRef(0);
   const isAdmin = Boolean(session && session.user.id === adminUserId);
   const section = useMemo(
     () => sections.find((item) => item.table === active)!,
@@ -721,6 +722,8 @@ export default function AdminPanel() {
     );
   }, []);
   const loadRows = useCallback(async () => {
+    const requestId = ++loadRequest.current;
+    setRows([]);
     setLoading(true);
     const templateGroup = section.templateGroup || (
       active === "faq_content"
@@ -738,6 +741,7 @@ export default function AdminPanel() {
         .select("value")
         .eq("key", "deleted_content_templates")
         .maybeSingle();
+      if (requestId !== loadRequest.current) return;
       const deletionMap = (deletionSetting?.value || {}) as Record<
         string,
         string[]
@@ -761,6 +765,7 @@ export default function AdminPanel() {
         ascending: section.order !== "created_at",
       });
     const { data, error } = await query;
+    if (requestId !== loadRequest.current) return;
     setLoading(false);
     if (error) setMessage(error.message);
     else {
@@ -776,10 +781,10 @@ export default function AdminPanel() {
             records = (refreshed || []) as Row[];
           }
         }
-        setRows(records);
+        if (requestId === loadRequest.current) setRows(records);
       } else if (active === "services") {
         const slugs = new Set(records.map((row) => row.slug));
-        setRows([
+        if (requestId === loadRequest.current) setRows([
           ...records,
           ...packageTemplates.filter(
             (row) =>
@@ -800,7 +805,7 @@ export default function AdminPanel() {
             records = (refreshed || []) as Row[];
           }
         }
-        setRows(records);
+        if (requestId === loadRequest.current) setRows(records);
       } else if (active === "faq_content") {
         const keys = new Set(records.map((row) => row.page_key));
         const missing = faqTemplates.filter(
@@ -827,8 +832,8 @@ export default function AdminPanel() {
             records = (refreshed || []) as Row[];
           }
         }
-        setRows(records);
-      } else setRows(records);
+        if (requestId === loadRequest.current) setRows(records);
+      } else if (requestId === loadRequest.current) setRows(records);
     }
   }, [active, albumFilter, section.order, section.filterPrefix, section.sourceTable, section.templateGroup, section.templates]);
   useEffect(() => {
@@ -970,9 +975,10 @@ export default function AdminPanel() {
       return;
     }
     const url = supabase.storage.from("inhere-media").getPublicUrl(path).data.publicUrl;
-    setEditing((current) => current ? { ...current, [field]: `${String(current[field] || "").trim()}\n\n![Describe this photograph](${url})\n\n` } : current);
+    const caption = field.endsWith("_vi") ? "Buổi chụp ảnh tại Hội An" : "Hội An photoshoot";
+    setEditing((current) => current ? { ...current, [field]: `${String(current[field] || "").trim()}\n\n![${caption}](${url})\n\n` } : current);
     setLoading(false);
-    setMessage("Image inserted into the article. Replace the caption text if needed.");
+    setMessage("Image inserted with a ready-to-use accessible caption. You can still customize it in the article text.");
     await loadMedia();
   };
   const uploadGalleryPhotos = async (files: FileList) => {
@@ -1136,10 +1142,13 @@ export default function AdminPanel() {
             <button
               className={active === item.table ? "active" : ""}
               onClick={() => {
+                loadRequest.current += 1;
                 setActive(item.table);
                 setAlbumFilter("");
                 setEditing(null);
                 setMessage("");
+                setRows([]);
+                setLoading(true);
               }}
               key={item.table}
             >
@@ -1165,7 +1174,7 @@ export default function AdminPanel() {
             <span>{section.description}</span>
           </div>
           {active !== "booking_requests" && (
-            <button onClick={() => setEditing({ ...section.defaults })}>
+            <button disabled={loading} onClick={() => setEditing({ ...section.defaults })}>
               + Add new
             </button>
           )}
@@ -1195,7 +1204,7 @@ export default function AdminPanel() {
         </div>
         <div className="admin-list">
           {loading && !rows.length ? (
-            <p>Loading…</p>
+            <p role="status" aria-live="polite">Loading {section.label}…</p>
           ) : (
             rows.map((row) => (
               <article
